@@ -38,7 +38,7 @@ function searchUsers(query = '') {
                 const li = document.createElement('li');
                 li.className = 'collection-item avatar';
                 li.innerHTML = `
-                    <img src="${user.avatar && user.avatar.length > 0 ? user.avatar : `https://api.dicebear.com/9.x/thumbs/svg?radius=30&seed=${user.nickname || 'user'}`}" alt="" class="circle">
+                    <img src="${`https://api.dicebear.com/9.x/thumbs/svg?radius=30&seed=${user.nickname}`}" alt="" class="circle">
                     <span class="title"><b>${user.nickname}</b></span>
                     <p>${user.name || ''} ${user.surname || ''}</p>
                     <a href="#!" class="secondary-content" onclick="showWishlist(${user.id}, '${user.nickname}')"><i class="material-icons teal-text">list</i></a>

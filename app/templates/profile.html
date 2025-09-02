@@ -9,17 +9,9 @@
                 <form method="post" action="/auth/profile" enctype="multipart/form-data">
                     <div class="center-align">
                         {% set dicebear_url = 'https://api.dicebear.com/9.x/thumbs/svg?radius=30&seed=' ~ (user.nickname or 'user') %}
-                        <img src="{{ user.avatar if user.avatar and user.avatar|length > 0 else dicebear_url }}" alt="Avatar" class="circle responsive-img" style="width: 100px; height: 100px; object-fit: cover;">
+                        <img src="{{ dicebear_url }}" alt="Avatar" class="circle responsive-img" style="width: 100px; height: 100px; object-fit: cover;">
                     </div>
-                    <div class="file-field input-field">
-                        <div class="btn teal">
-                            <span>Change Avatar</span>
-                            <input type="file" name="avatar">
-                        </div>
-                        <div class="file-path-wrapper">
-                            <input class="file-path validate" type="text" placeholder="Upload a new avatar">
-                        </div>
-                    </div>
+                    <!-- Avatar upload removed -->
                     <div class="input-field">
                         <input id="nickname" name="nickname" type="text" value="{{ user.nickname }}" required>
                         <label for="nickname" class="active">Nickname</label>
