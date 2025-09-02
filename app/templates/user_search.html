@@ -83,7 +83,7 @@ function loadPublicWishlist(userId) {
                 const li = document.createElement('li');
                 li.className = 'collection-item avatar';
                 li.innerHTML = `
-                    <img src="${item.picture || 'https://via.placeholder.com/64'}" alt="" class="circle">
+                    <img src="/static/default_bullet.png" alt="" class="circle">
                     <span class="title"><b>${item.name}</b></span>
                     <p>Price: $${item.price || '-'}<br>Event: ${item.event || '-'}<br>${item.details || ''}</p>
                     <a href="${item.link || '#'}" target="_blank">${item.link ? 'Link' : ''}</a>
