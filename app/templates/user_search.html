@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}Find Users - Wishlist App{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col s12 m8 offset-m2">
+        <h4>Find Users</h4>
+        <div class="input-field">
+            <input id="search" type="text" placeholder="Search by nickname, name, or surname">
+            <label for="search">Search Users</label>
+        </div>
+        <ul class="collection" id="user-list"></ul>
+    </div>
+</div>
+<!-- Public Wishlist Modal -->
+<div id="wishlist-modal" class="modal">
+    <div class="modal-content">
+        <h5 id="wishlist-modal-title">Wishlist</h5>
+        <div class="input-field">
+            <input id="min-price" type="number" step="0.01" placeholder="Min Price">
+            <input id="max-price" type="number" step="0.01" placeholder="Max Price">
+            <button class="btn teal" id="filter-btn">Filter</button>
+        </div>
+        <ul class="collection" id="public-wishlist"></ul>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+M.AutoInit();
+
+function searchUsers(query = '') {
+    fetch(`/public/users?q=${encodeURIComponent(query)}`)
+        .then(res => res.json())
+        .then(users => {
+            const list = document.getElementById('user-list');
+            list.innerHTML = '';
+            users.forEach(user => {
+                const li = document.createElement('li');
+                li.className = 'collection-item avatar';
+                li.innerHTML = `
+                    <img src="${user.avatar && user.avatar.length > 0 ? user.avatar : `https://api.dicebear.com/9.x/thumbs/svg?radius=30&seed=${user.nickname || 'user'}`}" alt="" class="circle">
+                    <span class="title"><b>${user.nickname}</b></span>
+                    <p>${user.name || ''} ${user.surname || ''}</p>
+                    <a href="#!" class="secondary-content" onclick="showWishlist(${user.id}, '${user.nickname}')"><i class="material-icons teal-text">list</i></a>
+                `;
+                list.appendChild(li);
+            });
+        });
+}
+
+document.getElementById('search').addEventListener('input', function() {
+    searchUsers(this.value);
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    searchUsers();
+});
+
+function showWishlist(userId, nickname) {
+    const modal = M.Modal.getInstance(document.getElementById('wishlist-modal'));
+    document.getElementById('wishlist-modal-title').textContent = `${nickname}'s Wishlist`;
+    loadPublicWishlist(userId);
+    modal.open();
+    document.getElementById('filter-btn').onclick = function() {
+        loadPublicWishlist(userId);
+    };
+}
+
+function loadPublicWishlist(userId) {
+    const min = document.getElementById('min-price').value;
+    const max = document.getElementById('max-price').value;
+    let url = `/public/wishlist/${userId}`;
+    const params = [];
+    if (min) params.push(`min_price=${min}`);
+    if (max) params.push(`max_price=${max}`);
+    if (params.length) url += '?' + params.join('&');
+    fetch(url)
+        .then(res => res.json())
+        .then(items => {
+            const list = document.getElementById('public-wishlist');
+            list.innerHTML = '';
+            items.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'collection-item avatar';
+                li.innerHTML = `
+                    <img src="${item.picture || 'https://via.placeholder.com/64'}" alt="" class="circle">
+                    <span class="title"><b>${item.name}</b></span>
+                    <p>Price: $${item.price || '-'}<br>Event: ${item.event || '-'}<br>${item.details || ''}</p>
+                    <a href="${item.link || '#'}" target="_blank">${item.link ? 'Link' : ''}</a>
+                `;
+                list.appendChild(li);
+            });
+        });
+}
+</script>
+{% endblock %}
