@@ -1,10 +1,21 @@
-from flask import Blueprint, request, jsonify, redirect, url_for, flash
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import login_user, logout_user, login_required, current_user
-from app.models.models import User
-from app import db, login_manager
-
 import re
+
+from flask import Blueprint
+from flask import flash
+from flask import jsonify
+from flask import redirect
+from flask import request
+from flask import url_for
+from flask_login import current_user
+from flask_login import login_required
+from flask_login import login_user
+from flask_login import logout_user
+from werkzeug.security import check_password_hash
+from werkzeug.security import generate_password_hash
+
+from app import db
+from app import login_manager
+from app.models.models import User
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 

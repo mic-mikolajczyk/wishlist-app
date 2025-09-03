@@ -1,7 +1,8 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
+
 from config import Config
 
 # Initialize extensions
@@ -23,9 +24,9 @@ def create_app():
     from app.models import models
     # Register blueprints
     from app.routes.auth import auth_bp
-    from app.routes.wishlist import wishlist_bp
-    from app.routes.public import public_bp
     from app.routes.frontend import frontend_bp
+    from app.routes.public import public_bp
+    from app.routes.wishlist import wishlist_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(wishlist_bp)

@@ -1,6 +1,10 @@
 
-from flask import Blueprint, render_template, redirect, url_for
-from flask_login import login_required, current_user
+from flask import Blueprint
+from flask import redirect
+from flask import render_template
+from flask import url_for
+from flask_login import current_user
+from flask_login import login_required
 
 frontend_bp = Blueprint('frontend', __name__)
 

@@ -1,7 +1,11 @@
-from flask import Blueprint, request, jsonify
-from flask_login import login_required, current_user
-from app.models.models import WishlistItem
+from flask import Blueprint
+from flask import jsonify
+from flask import request
+from flask_login import current_user
+from flask_login import login_required
+
 from app import db
+from app.models.models import WishlistItem
 
 wishlist_bp = Blueprint('wishlist', __name__, url_prefix='/wishlist')
 

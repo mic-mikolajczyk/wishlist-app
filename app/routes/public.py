@@ -1,5 +1,9 @@
-from flask import Blueprint, request, jsonify
-from app.models.models import User, WishlistItem
+from flask import Blueprint
+from flask import jsonify
+from flask import request
+
+from app.models.models import User
+from app.models.models import WishlistItem
 
 public_bp = Blueprint('public', __name__, url_prefix='/public')
 
