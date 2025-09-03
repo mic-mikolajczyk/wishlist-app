@@ -1,8 +1,10 @@
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify, redirect, url_for, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, login_required, current_user
 from app.models.models import User
 from app import db, login_manager
+
+import re
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -10,8 +12,6 @@ auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
-
-
 
 
 @auth_bp.route('/register', methods=['POST'])
@@ -38,7 +38,6 @@ def register():
     db.session.commit()
     # If the request is from a form, redirect to login page with a message
     if not request.is_json:
-        from flask import flash, redirect, url_for
         flash('Registration successful! Please log in.', 'success')
         return redirect(url_for('frontend.login_page'))
     return jsonify({'message': 'User registered successfully'}), 201
@@ -54,14 +53,14 @@ def login():
         email = request.form.get('email')
         password = request.form.get('password')
     user = User.query.filter_by(email=email).first()
-    if user and check_password_hash(user.password_hash, password):
+
+    if user and password is not None and check_password_hash(user.password_hash, password):
         login_user(user)
         if not request.is_json:
-            from flask import redirect, url_for
             return redirect(url_for('frontend.wishlist_page'))
         return jsonify({'message': 'Logged in successfully'})
+
     if not request.is_json:
-        from flask import flash, redirect, url_for
         flash('Invalid credentials', 'error')
         return redirect(url_for('frontend.login_page'))
     return jsonify({'error': 'Invalid credentials'}), 401
@@ -71,7 +70,6 @@ def login():
 @login_required
 def logout():
     logout_user()
-    from flask import flash, redirect, url_for
     flash('You have been logged out.', 'success')
     return redirect(url_for('frontend.home'))
 
@@ -87,7 +85,7 @@ def profile():
             'surname': current_user.surname,
             'avatar': current_user.avatar
         })
-    if request.method == 'PUT':
+    elif request.method == 'PUT':
         data = request.get_json()
         current_user.nickname = data.get('nickname', current_user.nickname)
         current_user.name = data.get('name', current_user.name)
@@ -95,10 +93,8 @@ def profile():
         current_user.avatar = data.get('avatar', current_user.avatar)
         db.session.commit()
         return jsonify({'message': 'Profile updated'})
-    if request.method == 'POST':
+    elif request.method == 'POST':
         # Handle form submission for profile update
-        import re
-        from flask import flash, redirect, url_for
         nickname = request.form.get('nickname', current_user.nickname)
         name = request.form.get('name', current_user.name)
         surname = request.form.get('surname', current_user.surname)
@@ -118,3 +114,5 @@ def profile():
         db.session.commit()
         flash('Profile updated!', 'success')
         return redirect(url_for('frontend.profile_page'))
+    else:
+        return jsonify({'error': 'Method not allowed'}), 405

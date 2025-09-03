@@ -3,6 +3,7 @@ from app.models.models import User, WishlistItem
 
 public_bp = Blueprint('public', __name__, url_prefix='/public')
 
+
 @public_bp.route('/users', methods=['GET'])
 def search_users():
     query = request.args.get('q', '')
@@ -20,6 +21,7 @@ def search_users():
             'surname': user.surname
         } for user in users
     ])
+
 
 @public_bp.route('/wishlist/<int:user_id>', methods=['GET'])
 def view_wishlist(user_id):

@@ -9,7 +9,8 @@ wishlist_bp = Blueprint('wishlist', __name__, url_prefix='/wishlist')
 @wishlist_bp.route('/<int:item_id>', methods=['GET'])
 @login_required
 def get_item(item_id):
-    item = WishlistItem.query.filter_by(id=item_id, user_id=current_user.id).first_or_404()
+    item = WishlistItem.query.filter_by(
+        id=item_id, user_id=current_user.id).first_or_404()
     return jsonify({
         'id': item.id,
         'name': item.name,
@@ -33,14 +34,11 @@ def get_wishlist():
         'link': item.link
     } for item in items])
 
+
 @wishlist_bp.route('/', methods=['POST'])
 @login_required
 def add_item():
     data = request.get_json()
-    picture = data.get('picture')
-    # Only accept picture if it's a string (URL or filename), else set to None
-    if not isinstance(picture, str):
-        picture = None
     item = WishlistItem(
         name=data.get('name'),
         price=data.get('price'),
@@ -53,10 +51,12 @@ def add_item():
     db.session.commit()
     return jsonify({'message': 'Item added', 'id': item.id}), 201
 
+
 @wishlist_bp.route('/<int:item_id>', methods=['PUT'])
 @login_required
 def edit_item(item_id):
-    item = WishlistItem.query.filter_by(id=item_id, user_id=current_user.id).first_or_404()
+    item = WishlistItem.query.filter_by(
+        id=item_id, user_id=current_user.id).first_or_404()
     data = request.get_json()
     item.name = data.get('name', item.name)
     item.price = data.get('price', item.price)
@@ -67,10 +67,12 @@ def edit_item(item_id):
     db.session.commit()
     return jsonify({'message': 'Item updated'})
 
+
 @wishlist_bp.route('/<int:item_id>', methods=['DELETE'])
 @login_required
 def delete_item(item_id):
-    item = WishlistItem.query.filter_by(id=item_id, user_id=current_user.id).first_or_404()
+    item = WishlistItem.query.filter_by(
+        id=item_id, user_id=current_user.id).first_or_404()
     db.session.delete(item)
     db.session.commit()
     return jsonify({'message': 'Item deleted'})
