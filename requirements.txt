@@ -1,0 +1,5 @@
+flask
+gunicorn
+alembic
+sqlalchemy
+flask-login
