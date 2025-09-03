@@ -44,13 +44,14 @@ def get_wishlist():
 def add_item():
     data = request.get_json()
     item = WishlistItem(
-        name=data.get('name'),
-        price=data.get('price'),
-        details=data.get('details'),
-        event=data.get('event'),
-        link=data.get('link'),
-        user_id=current_user.id
+        name=data.get('name'),  # type: ignore
+        price=data.get('price'),  # type: ignore
+        details=data.get('details'),  # type: ignore
+        event=data.get('event'),  # type: ignore
+        link=data.get('link'),  # type: ignore
+        user_id=current_user.id  # type: ignore
     )
+
     db.session.add(item)
     db.session.commit()
     return jsonify({'message': 'Item added', 'id': item.id}), 201
@@ -67,7 +68,6 @@ def edit_item(item_id):
     item.details = data.get('details', item.details)
     item.event = data.get('event', item.event)
     item.link = data.get('link', item.link)
-    # Picture field removed
     db.session.commit()
     return jsonify({'message': 'Item updated'})
 

@@ -21,7 +21,8 @@ def create_app():
     migrate.init_app(app, db)
 
     # Import models so Flask-Migrate can detect them
-    from app.models import models
+    from app.models import models  # noqa: F401
+
     # Register blueprints
     from app.routes.auth import auth_bp
     from app.routes.frontend import frontend_bp

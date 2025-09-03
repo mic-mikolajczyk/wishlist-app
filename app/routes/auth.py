@@ -96,34 +96,38 @@ def profile():
             'surname': current_user.surname,
             'avatar': current_user.avatar
         })
+
     elif request.method == 'PUT':
         data = request.get_json()
         current_user.nickname = data.get('nickname', current_user.nickname)
         current_user.name = data.get('name', current_user.name)
         current_user.surname = data.get('surname', current_user.surname)
-        current_user.avatar = data.get('avatar', current_user.avatar)
         db.session.commit()
         return jsonify({'message': 'Profile updated'})
+
     elif request.method == 'POST':
         # Handle form submission for profile update
         nickname = request.form.get('nickname', current_user.nickname)
         name = request.form.get('name', current_user.name)
         surname = request.form.get('surname', current_user.surname)
+
         # Validate nickname: only allow letters, numbers, -, _
         if not re.match(r'^[A-Za-z0-9_-]+$', nickname):
             flash('Nickname can only contain letters, numbers, hyphens, and underscores.', 'error')
             return redirect(url_for('frontend.profile_page'))
+
         # Check for duplicate nickname
-        from app.models.models import User
         existing = User.query.filter(User.nickname == nickname, User.id != current_user.id).first()
         if existing:
             flash('This nickname is already taken. Please choose another.', 'error')
             return redirect(url_for('frontend.profile_page'))
+
         current_user.nickname = nickname
         current_user.name = name
         current_user.surname = surname
         db.session.commit()
         flash('Profile updated!', 'success')
         return redirect(url_for('frontend.profile_page'))
+
     else:
         return jsonify({'error': 'Method not allowed'}), 405
