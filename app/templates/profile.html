@@ -17,11 +17,11 @@
                         <label for="nickname" class="active">Nickname</label>
                     </div>
                     <div class="input-field">
-                        <input id="name" name="name" type="text" value="{{ user.name }}">
+                        <input id="name" name="name" type="text" value="{{ user.name if user.name is not none else '' }}">
                         <label for="name" class="active">Name</label>
                     </div>
                     <div class="input-field">
-                        <input id="surname" name="surname" type="text" value="{{ user.surname }}">
+                        <input id="surname" name="surname" type="text" value="{{ user.surname if user.surname is not none else '' }}">
                         <label for="surname" class="active">Surname</label>
                     </div>
                     <button class="btn teal" type="submit">Update Profile</button>
