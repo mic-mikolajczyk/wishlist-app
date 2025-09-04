@@ -27,4 +27,4 @@ EXPOSE 10000
 RUN flask db upgrade
 
 # Run the app
-CMD ["gunicorn", "--bind", "0.0.0.0:10000", "app:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:10000", "app:create_app()"]
