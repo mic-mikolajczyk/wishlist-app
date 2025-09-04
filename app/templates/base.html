@@ -31,9 +31,9 @@
     
     <nav>
         <div class="nav-wrapper teal">
-            <a href="/" class="brand-logo">Wishlist App</a>
+            <a href="/" class="brand-logo" style="margin-left: 1rem;">Wishlist App</a>
             <a href="#" data-target="mobile-nav" class="sidenav-trigger"><i class="material-icons">menu</i></a>
-            <ul id="nav-desktop" class="right hide-on-med-and-down">
+            <ul id="nav-desktop" class="right hide-on-med-and-down" style="margin-right: 15px;">
                 {% if current_user.is_authenticated %}
                     <li><a href="{{ url_for('frontend.wishlist_page') }}">My Wishlist</a></li>
                     <li><a href="{{ url_for('frontend.user_search_page') }}">Find Users</a></li>
