@@ -3,3 +3,4 @@ gunicorn
 alembic
 sqlalchemy
 flask-login
+flask-migrate
