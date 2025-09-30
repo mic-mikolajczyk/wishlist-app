@@ -7,32 +7,61 @@
     <!-- Materialize CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        /* Custom styles for bottom navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 64px;  /* Increased height for more space */
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+            display: none;
+            z-index: 997;
+        }
+        .bottom-nav .btn-flat {
+            height: 64px;  /* Increased height for more space */
+            flex-grow: 1;
+            border-radius: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;  /* Centers content vertically */
+            align-items: center;
+            color: #ffffff;
+            padding: 8px 0 4px;  /* Adjusted padding: top, right/left, bottom */
+        }
+        .bottom-nav .btn-flat.active {
+            background-color: rgba(0, 27, 24, 0.199);
+            color: #000000d3;
+        }
+        .bottom-nav .btn-flat i {
+            display: block;
+            margin-bottom: 0;  /* Reduced to 0 */
+            font-size: 24px;
+            margin-top: 0;  /* Reduced to 0 */
+            line-height: 24px;  /* Added to control height */
+        }
+        .bottom-nav .btn-flat span {
+            font-size: 12px;
+            white-space: nowrap;
+            margin-bottom: 0;  /* Reduced to 0 */
+            line-height: 14px;  /* Added to control height */
+        }
+        body {
+            padding-bottom: 64px;  /* Updated to match the new navigation height */
+        }
+        @media only screen and (max-width: 992px) {
+            .bottom-nav {
+                display: flex;
+            }
+        }
+    </style>
     {% block head %}{% endblock %}
 </head>
 <body>
-    <!-- Sidenav for mobile -->
-    <ul id="mobile-nav" class="sidenav">
-        {% if current_user.is_authenticated %}
-            <li><a href="{{ url_for('frontend.wishlist_page') }}"><i class="material-icons">list</i>My Wishlist</a></li>
-            <li><a href="{{ url_for('frontend.user_search_page') }}"><i class="material-icons">search</i>Find Users</a></li>
-            <li><a href="{{ url_for('frontend.profile_page') }}"><i class="material-icons">person</i>Profile</a></li>
-            <li>
-                <form method="post" action="{{ url_for('auth.logout') }}">
-                    <button type="submit" class="btn-flat" style="width:100%; text-align:left;">
-                        <i class="material-icons left">exit_to_app</i>Logout
-                    </button>
-                </form>
-            </li>
-        {% else %}
-            <li><a href="{{ url_for('frontend.login_page') }}"><i class="material-icons">login</i>Login</a></li>
-            <li><a href="{{ url_for('frontend.register_page') }}"><i class="material-icons">person_add</i>Register</a></li>
-        {% endif %}
-    </ul>
-    
     <nav>
         <div class="nav-wrapper teal">
             <a href="/" class="brand-logo" style="margin-left: 1rem;">Givvi</a>
-            <a href="#" data-target="mobile-nav" class="sidenav-trigger"><i class="material-icons">menu</i></a>
             <ul id="nav-desktop" class="right hide-on-med-and-down" style="margin-right: 15px;">
                 {% if current_user.is_authenticated %}
                     <li><a href="{{ url_for('frontend.wishlist_page') }}">My Wishlist</a></li>
@@ -64,13 +93,73 @@
         {% block content %}{% endblock %}
     </main>
     
+    <!-- Bottom Navigation for Mobile -->
+    <div class="bottom-nav teal lighten-1 hide-on-large-only">
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('frontend.wishlist_page') }}" class="btn-flat waves-effect waves-light">
+                <i class="material-icons">list</i>
+                <span>Wishlist</span>
+            </a>
+            <a href="{{ url_for('frontend.user_search_page') }}" class="btn-flat waves-effect waves-light">
+                <i class="material-icons">search</i>
+                <span>Find</span>
+            </a>
+            <a href="{{ url_for('frontend.profile_page') }}" class="btn-flat waves-effect waves-light">
+                <i class="material-icons">person</i>
+                <span>Profile</span>
+            </a>
+            <a href="#logout-modal" class="btn-flat waves-effect waves-light modal-trigger">
+                <i class="material-icons">exit_to_app</i>
+                <span>Logout</span>
+            </a>
+        {% else %}
+            <a href="{{ url_for('frontend.login_page') }}" class="btn-flat waves-effect waves-light">
+                <i class="material-icons">login</i>
+                <span>Login</span>
+            </a>
+            <a href="{{ url_for('frontend.register_page') }}" class="btn-flat waves-effect waves-light">
+                <i class="material-icons">person_add</i>
+                <span>Register</span>
+            </a>
+            <a href="/" class="btn-flat waves-effect waves-light">
+                <i class="material-icons">home</i>
+                <span>Home</span>
+            </a>
+        {% endif %}
+    </div>
+    
+    <!-- Logout Modal -->
+    {% if current_user.is_authenticated %}
+    <div id="logout-modal" class="modal bottom-sheet">
+        <div class="modal-content">
+            <h4>Logout</h4>
+            <p>Are you sure you want to logout?</p>
+        </div>
+        <div class="modal-footer">
+            <form method="post" action="{{ url_for('auth.logout') }}">
+                <button type="submit" class="btn-flat teal-text waves-effect waves-green">Logout</button>
+            </form>
+            <a href="#!" class="modal-close waves-effect waves-red btn-flat">Cancel</a>
+        </div>
+    </div>
+    {% endif %}
+    
     <!-- Materialize JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize sidenav
-            var elems = document.querySelectorAll('.sidenav');
-            var instances = M.Sidenav.init(elems);
+            // Initialize modal
+            var modalElems = document.querySelectorAll('.modal');
+            var modalInstances = M.Modal.init(modalElems);
+            
+            // Highlight active menu item
+            var currentPath = window.location.pathname;
+            var bottomNavLinks = document.querySelectorAll('.bottom-nav a');
+            bottomNavLinks.forEach(function(link) {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
         });
     </script>
     {% block scripts %}{% endblock %}
