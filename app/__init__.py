@@ -28,10 +28,12 @@ def create_app():
     from app.routes.frontend import frontend_bp
     from app.routes.public import public_bp
     from app.routes.wishlist import wishlist_bp
+    from app.routes.events import events_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(wishlist_bp)
     app.register_blueprint(public_bp)
+    app.register_blueprint(events_bp)
     app.register_blueprint(frontend_bp)
 
     return app
