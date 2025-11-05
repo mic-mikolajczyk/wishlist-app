@@ -1,16 +1,59 @@
 {% extends 'base.html' %}
 {% block title %}Home - Wishlist App{% endblock %}
+{% block head %}
+<style>
+    .hero-wrapper {
+        min-height: 60vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .hero-card {
+        border-radius: 16px;
+        overflow: hidden;
+        background: linear-gradient(135deg, #ffffff, #f2f9f8); /* subtle gradient */
+        box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+        transition: box-shadow .3s ease;
+    }
+    .hero-card:hover { box-shadow: 0 12px 32px rgba(0,0,0,0.1); }
+    .gift-illustration { max-width: 180px; width:100%; display:block; margin:0 auto 1.25rem; }
+    .hero-title { font-weight:600; letter-spacing:.5px; }
+    .hero-sub { font-size:1.05rem; color:#455a64; margin-top:.75rem; }
+    .cta-group a { margin-right:.5rem; margin-top:.75rem; }
+    @media (max-width:600px) {
+        .hero-wrapper { min-height: 50vh; }
+        .gift-illustration { max-width:140px; }
+    }
+</style>
+{% endblock %}
 {% block content %}
-<div class="row">
-    <div class="col s12 m6 offset-m3">
-        <div class="card">
-            <div class="card-content">
-                <span class="card-title">Welcome to Wishlist App</span>
-                <p>Manage your gift wishlist, share it with friends, and discover others' wishlists!</p>
-            </div>
-            <div class="card-action">
-                <a href="/login" class="btn teal">Login</a>
-                <a href="/register" class="btn-flat">Register</a>
+<div class="hero-wrapper">
+    <div class="card hero-card z-depth-1" style="width:100%; max-width:640px;">
+        <div class="card-content center">
+            <!-- Minimalistic inline SVG illustration -->
+            <svg class="gift-illustration" viewBox="0 0 160 160" role="img" aria-label="Stylized gift box illustration">
+                <defs>
+                    <linearGradient id="lidGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#00bfa5"/>
+                        <stop offset="100%" stop-color="#009688"/>
+                    </linearGradient>
+                    <linearGradient id="boxGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#e0f2f1"/>
+                        <stop offset="100%" stop-color="#b2dfdb"/>
+                    </linearGradient>
+                </defs>
+                <rect x="24" y="60" width="112" height="76" rx="8" fill="url(#boxGradient)" stroke="#009688" stroke-width="2" />
+                <rect x="16" y="44" width="128" height="32" rx="6" fill="url(#lidGradient)" />
+                <path d="M80 44 L80 136" stroke="#00796b" stroke-width="6" stroke-linecap="round" />
+                <path d="M64 44 C40 32 40 16 60 18 C72 20 76 32 80 40" stroke="#00796b" stroke-width="5" fill="none" stroke-linecap="round" />
+                <path d="M96 44 C120 32 120 16 100 18 C88 20 84 32 80 40" stroke="#00796b" stroke-width="5" fill="none" stroke-linecap="round" />
+                <circle cx="80" cy="40" r="4" fill="#004d40" />
+            </svg>
+            <h4 class="hero-title">Curate. Share. Celebrate.</h4>
+            <p class="hero-sub">Create wishlists for upcoming events, collaborate with friends, and make gift giving effortless.</p>
+            <div class="cta-group">
+                <a href="/login" class="btn teal waves-effect waves-light" aria-label="Login to your account">Login</a>
+                <a href="/register" class="btn-flat teal-text waves-effect" aria-label="Register a new account">Register</a>
             </div>
         </div>
     </div>
