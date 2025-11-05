@@ -10,15 +10,50 @@
       {% if event.budget_amount %}<b>Budget:</b> {{ event.budget_amount }} {{ event.budget_currency }}{% endif %}
     </p>
     {% set is_admin = (event.admin_user_id == current_user.id) %}
-    {% if is_admin %}
-      <a class="btn modal-trigger" href="#edit-event-modal"><i class="material-icons left">edit</i>Edit Event</a>
-      <form method="post" action="{{ url_for('events.delete_event', event_id=event.id) }}" style="display:inline;" onsubmit="return confirm('Delete event? This cannot be undone');">
-        <button type="submit" class="btn red"><i class="material-icons left">delete</i>Delete Event</button>
-      </form>
+    <div class="event-actions">
+      {% if is_admin %}
+        <a class="btn modal-trigger" href="#edit-event-modal"><i class="material-icons left">edit</i>Edit Event</a>
+        <form method="post" action="{{ url_for('events.delete_event', event_id=event.id) }}" onsubmit="return confirm('Delete event? This cannot be undone');">
+          <button type="submit" class="btn red"><i class="material-icons left">delete</i>Delete Event</button>
+        </form>
+        <form method="post" action="{{ url_for('events.enable_drawing', event_id=event.id) }}" onsubmit="return confirm('Enable drawing? This will lock invitations.');">
+          <button type="submit" class="btn {% if event.drawing_enabled %}grey disabled{% else %}purple{% endif %}"><i class="material-icons left">shuffle</i>{% if event.drawing_enabled %}Drawing Enabled{% else %}Enable Drawing{% endif %}</button>
+        </form>
+        {% if event.drawing_enabled %}
+        <form method="post" action="{{ url_for('events.reset_drawing', event_id=event.id) }}" onsubmit="return confirm('Reset all drawing assignments?');">
+          <button type="submit" class="btn orange"><i class="material-icons left">restart_alt</i>Reset Drawing</button>
+        </form>
+        {% endif %}
+      {% else %}
+        <form method="post" action="{{ url_for('events.leave_event', event_id=event.id) }}" onsubmit="return confirm('Leave this event?');">
+          <button type="submit" class="btn orange"><i class="material-icons left">exit_to_app</i>Leave Event</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col s12" style="text-align:center; margin-top:1rem;">
+    {% set my_part = None %}
+    {% for p in participants %}
+      {% if p.user_id == current_user.id %}{% set my_part = p %}{% endif %}
+    {% endfor %}
+    {% if event.drawing_enabled %}
+      {% if my_part and my_part.drawn_at and my_part.recipient %}
+        <div class="card-panel green lighten-5" id="draw-result">
+          <h5 style="margin:0;">You will give a gift to:</h5>
+          <h4 style="margin:0;" id="recipient-name">{{ my_part.recipient.nickname }}</h4>
+        </div>
+      {% else %}
+        <button id="draw-button" class="btn-large purple" style="min-width:260px;">
+          <span id="draw-btn-label"><i class="material-icons left">card_giftcard</i>Draw Your Recipient</span>
+        </button>
+      {% endif %}
     {% else %}
-      <form method="post" action="{{ url_for('events.leave_event', event_id=event.id) }}" style="display:inline;" onsubmit="return confirm('Leave this event?');">
-        <button type="submit" class="btn orange"><i class="material-icons left">exit_to_app</i>Leave Event</button>
-      </form>
+      <button class="btn-large grey" style="min-width:260px;" disabled title="Drawing not enabled yet">
+        <i class="material-icons left">lock</i>Drawing not available
+      </button>
     {% endif %}
   </div>
 </div>
@@ -32,6 +67,9 @@
         <span class="title"><b>{{ p.user.nickname }}</b></span>
         {% if p.status == 'pending' %}<span class="new badge orange" data-badge-caption="Pending"></span>{% endif %}
         {% if p.is_admin %}<span class="new badge teal" data-badge-caption="Admin"></span>{% endif %}
+        {% if event.drawing_enabled and p.user_id == (my_part.recipient.user_id if my_part and my_part.recipient else None) %}
+          <span class="badge purple" data-badge-caption="Your Recipient"></span>
+        {% endif %}
       </li>
       {% endfor %}
     </ul>
@@ -113,6 +151,48 @@ document.addEventListener('DOMContentLoaded', function() {
       loadParticipantWishlist(EVENT_ID, userId, nickname);
     });
   });
+  const drawBtn = document.getElementById('draw-button');
+  if (drawBtn) {
+    drawBtn.addEventListener('click', function(){
+      drawBtn.classList.add('disabled');
+      const label = document.getElementById('draw-btn-label');
+      label.innerHTML = '<span class="preloader-wrapper small active"><div class="spinner-layer spinner-blue-only"><div class="circle-clipper left"><div class="circle"></div></div><div class="gap-patch"><div class="circle"></div></div><div class="circle-clipper right"><div class="circle"></div></div></div></span> Drawing...';
+      let resultData = null;
+      fetch(`/events/${EVENT_ID}/drawing/draw`, {method:'POST'})
+        .then(r=>r.json())
+        .then(data=>{
+          if(data.error){
+            M.toast({html: data.error});
+            return;
+          }
+          resultData = data;
+          // Delay reveal by 3s to visualize drawing process
+          setTimeout(function(){
+            const panel = document.createElement('div');
+            panel.className='card-panel green lighten-5';
+            panel.id='draw-result';
+            panel.innerHTML=`<h5 style='margin:0;'>You will give a gift to:</h5><h4 style='margin:0;' id='recipient-name'>${resultData.recipient_nickname}</h4>`;
+            drawBtn.parentNode.replaceChild(panel, drawBtn);
+            document.querySelectorAll('#participants-list li').forEach(function(li){
+              if(li.getAttribute('data-nickname') === resultData.recipient_nickname){
+                li.classList.add('purple','lighten-5');
+              }
+            });
+          }, 3000);
+        }).catch(err=>{
+          M.toast({html: 'Draw failed'});
+        });
+    });
+  }
 });
 </script>
+<style>
+/* Responsive stacking for event action buttons */
+@media (max-width: 600px) {
+  .event-actions {display:flex; flex-direction:column; align-items:stretch; gap:0.5rem;}
+  .event-actions a.btn,
+  .event-actions form .btn {width:100%;}
+  .event-actions form {margin:0;}
+}
+</style>
 {% endblock %}

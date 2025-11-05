@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for, abort, flash
 from flask_login import login_required, current_user
+from datetime import datetime
 
 from app import db
 from app.models.models import Event, EventParticipant, User, EVENT_PARTICIPANT_STATUS_PENDING, EVENT_PARTICIPANT_STATUS_ACCEPTED, ALLOWED_CURRENCIES
@@ -26,10 +27,8 @@ def _load_event_or_404(event_id: int) -> Event:
 @events_bp.route('/dashboard')
 @login_required
 def dashboard():
-    # Accepted events
     accepted_participations = EventParticipant.query.filter_by(user_id=current_user.id, status=EVENT_PARTICIPANT_STATUS_ACCEPTED).all()
     events = [p.event for p in accepted_participations]
-    # Pending invitations
     pending_participations = EventParticipant.query.filter_by(user_id=current_user.id, status=EVENT_PARTICIPANT_STATUS_PENDING).all()
     pending_events = [p.event for p in pending_participations]
     return render_template('dashboard.html', events=events, pending_events=pending_events)
@@ -42,7 +41,7 @@ def create_event():
     if request.is_json:
         data = request.get_json()
         name = data.get('name')
-        date_str = data.get('date')  # Expect YYYY-MM-DD
+        date_str = data.get('date')
         budget_amount = data.get('budget_amount')
         budget_currency = (data.get('budget_currency') or 'PLN').upper()
     else:
@@ -50,15 +49,12 @@ def create_event():
         date_str = request.form.get('date')
         budget_amount = request.form.get('budget_amount')
         budget_currency = (request.form.get('budget_currency') or 'PLN').upper()
-
     if not name:
         flash('Event name is required', 'error')
         return redirect(url_for('events.dashboard'))
-
     if budget_currency not in ALLOWED_CURRENCIES:
         flash('Unsupported currency', 'error')
         return redirect(url_for('events.dashboard'))
-
     from datetime import datetime as _dt
     event_date = None
     if date_str:
@@ -67,13 +63,11 @@ def create_event():
         except ValueError:
             flash('Invalid date format (expected YYYY-MM-DD)', 'error')
             return redirect(url_for('events.dashboard'))
-
     try:
         budget_amount_val = float(budget_amount) if budget_amount else None
     except ValueError:
         flash('Budget must be a number', 'error')
         return redirect(url_for('events.dashboard'))
-
     event = Event()
     event.name = name
     event.date = event_date
@@ -81,8 +75,7 @@ def create_event():
     event.budget_currency = budget_currency
     event.admin_user_id = current_user.id
     db.session.add(event)
-    db.session.flush()  # get id
-    # Add creator as accepted admin participant
+    db.session.flush()
     participant = EventParticipant()
     participant.event_id = event.id
     participant.user_id = current_user.id
@@ -168,11 +161,12 @@ def leave_event(event_id: int):
 @login_required
 def invite_user(event_id: int):
     event = _load_event_or_404(event_id)
-    # Any accepted participant or admin can invite
+    if getattr(event, 'drawing_enabled', False):
+        flash('Cannot invite new participants after drawing has been enabled.', 'error')
+        return redirect(url_for('events.view_event', event_id=event.id))
     inviter_part = EventParticipant.query.filter_by(event_id=event.id, user_id=current_user.id).first()
     if not inviter_part or inviter_part.status != EVENT_PARTICIPANT_STATUS_ACCEPTED:
         abort(403)
-    # Accept both JSON and form
     if request.is_json:
         data = request.get_json()
         target_nickname = data.get('nickname')
@@ -226,13 +220,11 @@ def reject_invitation(event_id: int):
 @events_bp.route('/<int:event_id>/participant/<int:user_id>/wishlist')
 @login_required
 def participant_wishlist(event_id: int, user_id: int):
-    # Ensure current user is accepted participant
     me_part = EventParticipant.query.filter_by(event_id=event_id, user_id=current_user.id, status=EVENT_PARTICIPANT_STATUS_ACCEPTED).first()
     if not me_part:
         abort(403)
     target_part = EventParticipant.query.filter_by(event_id=event_id, user_id=user_id).first_or_404()
     if target_part.status != EVENT_PARTICIPANT_STATUS_ACCEPTED:
-        # Allow viewing only accepted participants
         abort(403)
     from app.models.models import WishlistItem, Event as EventModel
     event = EventModel.query.get_or_404(event_id)
@@ -248,6 +240,74 @@ def participant_wishlist(event_id: int, user_id: int):
             'link': item.link
         } for item in items
     ])
+
+
+# -------------------------- Drawing: enable --------------------------------
+@events_bp.route('/<int:event_id>/drawing/enable', methods=['POST'])
+@login_required
+def enable_drawing(event_id: int):
+    event = _load_event_or_404(event_id)
+    if not _user_is_event_admin(event):
+        abort(403)
+    accepted = [p for p in EventParticipant.query.filter_by(event_id=event.id, status=EVENT_PARTICIPANT_STATUS_ACCEPTED).all()]
+    if len(accepted) < 2:
+        flash('Need at least 2 accepted participants to enable drawing.', 'error')
+        return redirect(url_for('events.view_event', event_id=event.id))
+    if event.drawing_enabled:
+        flash('Drawing already enabled.', 'error')
+        return redirect(url_for('events.view_event', event_id=event.id))
+    import random
+    user_ids = [p.user_id for p in accepted]
+    for _ in range(50):
+        perm = user_ids[:]
+        random.shuffle(perm)
+        if all(uid != perm[i] for i, uid in enumerate(user_ids)):
+            break
+    else:
+        flash('Failed to generate drawing assignments, please retry.', 'error')
+        return redirect(url_for('events.view_event', event_id=event.id))
+    assignment_map = {user_ids[i]: perm[i] for i in range(len(user_ids))}
+    for p in accepted:
+        p.assigned_recipient_user_id = assignment_map[p.user_id]
+        p.drawn_at = None
+    event.drawing_enabled = True
+    db.session.commit()
+    flash('Drawing enabled. Participants can now draw their recipient.', 'success')
+    return redirect(url_for('events.view_event', event_id=event.id))
+
+
+# -------------------------- Drawing: draw my recipient ---------------------
+@events_bp.route('/<int:event_id>/drawing/draw', methods=['POST'])
+@login_required
+def draw_recipient(event_id: int):
+    event = _load_event_or_404(event_id)
+    if not event.drawing_enabled:
+        abort(403)
+    participant = EventParticipant.query.filter_by(event_id=event.id, user_id=current_user.id, status=EVENT_PARTICIPANT_STATUS_ACCEPTED).first_or_404()
+    if participant.drawn_at is not None:
+        return jsonify({'error': 'Already drawn', 'recipient_nickname': participant.recipient.nickname if participant.recipient else None}), 400
+    if participant.assigned_recipient_user_id is None:
+        return jsonify({'error': 'No assignment found'}), 400
+    participant.drawn_at = datetime.utcnow()
+    db.session.commit()
+    return jsonify({'recipient_user_id': participant.assigned_recipient_user_id, 'recipient_nickname': participant.recipient.nickname})
+
+
+# -------------------------- Drawing: reset ---------------------------------
+@events_bp.route('/<int:event_id>/drawing/reset', methods=['POST'])
+@login_required
+def reset_drawing(event_id: int):
+    event = _load_event_or_404(event_id)
+    if not _user_is_event_admin(event):
+        abort(403)
+    participants = EventParticipant.query.filter_by(event_id=event.id).all()
+    for p in participants:
+        p.assigned_recipient_user_id = None
+        p.drawn_at = None
+    event.drawing_enabled = False
+    db.session.commit()
+    flash('Drawing has been reset.', 'success')
+    return redirect(url_for('events.view_event', event_id=event.id))
 
 
 # -------------------------- API: list my events ---------------------------

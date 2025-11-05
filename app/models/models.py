@@ -30,7 +30,11 @@ class User(UserMixin, db.Model):
     avatar = db.Column(db.String(256), default='default_avatar.png')
     password_hash = db.Column(db.String(128), nullable=False)
     wishlist_items = db.relationship('WishlistItem', backref='owner', lazy=True)
-    event_participations = db.relationship('EventParticipant', backref='user', lazy=True, cascade='all, delete-orphan')
+    # Specify foreign_keys to disambiguate from assigned_recipient_user_id
+    event_participations = db.relationship(
+        'EventParticipant', backref='user', lazy=True,
+        cascade='all, delete-orphan', foreign_keys='EventParticipant.user_id'
+    )
 
     @property
     def events(self):
@@ -69,6 +73,8 @@ class Event(db.Model):
     budget_currency = db.Column('currency', db.String(3), default='PLN')  # existing column currency
     admin_user_id = db.Column('admin_id', db.Integer, db.ForeignKey('user.id'), nullable=False)  # existing column admin_id
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))  # new column via migration
+    # Drawing feature flag - when enabled admin generated assignments
+    drawing_enabled = db.Column(db.Boolean, default=False, nullable=False)
 
     admin = db.relationship('User', foreign_keys=[admin_user_id])
     participants = db.relationship('EventParticipant', backref='event', lazy=True, cascade='all, delete-orphan')
@@ -103,6 +109,10 @@ class EventParticipant(db.Model):
     status = db.Column(db.String(16), default=EVENT_PARTICIPANT_STATUS_PENDING, nullable=False)
     invited_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     accepted_at = db.Column(db.DateTime)
+    # Pre-assigned recipient user id (secret until user draws)
+    assigned_recipient_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    drawn_at = db.Column(db.DateTime)  # timestamp when user revealed recipient
+    recipient = db.relationship('User', foreign_keys=[assigned_recipient_user_id], lazy=True)
 
     __table_args__ = (
         db.UniqueConstraint('event_id', 'user_id', name='uq_event_user'),
@@ -116,4 +126,4 @@ class EventParticipant(db.Model):
         self.status = EVENT_PARTICIPANT_STATUS_REJECTED
 
     def __repr__(self):
-        return f'<EventParticipant user={self.user_id} event={self.event_id} status={self.status}>'
+        return f'<EventParticipant user={self.user_id} event={self.event_id} status={self.status} recipient={self.assigned_recipient_user_id} drawn={bool(self.drawn_at)}>'
