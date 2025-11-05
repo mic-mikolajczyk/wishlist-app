@@ -85,7 +85,7 @@ function loadPublicWishlist(userId) {
                 li.innerHTML = `
                     <img src="/static/default_bullet.png" alt="" class="circle">
                     <span class="title"><b>${item.name}</b></span>
-                    <p>Price: $${item.price || '-'}<br>Event: ${item.event || '-'}<br>${item.details || ''}</p>
+                    <p>Price: ${item.price !== null && item.price !== undefined ? item.price : '-'} ${item.currency || ''}<br>Event: ${item.event || '-'}<br>${item.details || ''}</p>
                     <a href="${item.link || '#'}" target="_blank">${item.link ? 'Link' : ''}</a>
                 `;
                 list.appendChild(li);

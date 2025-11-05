@@ -12,9 +12,7 @@ public_bp = Blueprint('public', __name__, url_prefix='/public')
 def search_users():
     query = request.args.get('q', '')
     users = User.query.filter(
-        (User.nickname.ilike(f'%{query}%')) |
-        (User.name.ilike(f'%{query}%')) |
-        (User.surname.ilike(f'%{query}%'))
+        (User.nickname.ilike(f'%{query}%')) | (User.name.ilike(f'%{query}%')) | (User.surname.ilike(f'%{query}%'))
     ).all()
     return jsonify([
         {
@@ -42,6 +40,7 @@ def view_wishlist(user_id):
             'id': item.id,
             'name': item.name,
             'price': item.price,
+            'currency': item.currency,
             'details': item.details,
             'event': item.event,
             'link': item.link

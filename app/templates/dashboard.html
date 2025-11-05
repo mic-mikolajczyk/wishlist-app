@@ -7,9 +7,12 @@
     <a class="btn modal-trigger teal" href="#create-event-modal"><i class="material-icons left">add</i>Create Event</a>
     <ul class="collection" id="events-list">
       {% for event in events %}
-      <li class="collection-item">
-        <span><b>{{ event.name }}</b> {% if event.date %}- {{ event.date }}{% endif %} {% if event.budget_amount %} | Budget: {{ event.budget_amount }} {{ event.budget_currency }}{% endif %}</span>
-        <a href="{{ url_for('events.view_event', event_id=event.id) }}" class="secondary-content"><i class="material-icons">chevron_right</i></a>
+      <li class="collection-item event-row" data-event-id="{{ event.id }}" style="cursor:pointer;">
+        <span class="title"><b>{{ event.name }}</b></span>
+        <p style="margin:0;">
+          {% if event.date %}Date: {{ event.date }}{% endif %}
+          {% if event.budget_amount %}<br>Budget: {{ event.budget_amount }} {{ event.budget_currency }}{% endif %}
+        </p>
       </li>
       {% else %}
       <li class="collection-item grey-text">No events yet.</li>
@@ -71,5 +74,12 @@
 {% block scripts %}
 <script>
 M.AutoInit();
+// Row click navigation for events
+document.querySelectorAll('.event-row').forEach(function(row){
+  row.addEventListener('click', function(){
+    const id=this.getAttribute('data-event-id');
+    window.location.href="/events/" + id;
+  });
+});
 </script>
 {% endblock %}

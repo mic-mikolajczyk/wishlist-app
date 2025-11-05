@@ -234,13 +234,15 @@ def participant_wishlist(event_id: int, user_id: int):
     if target_part.status != EVENT_PARTICIPANT_STATUS_ACCEPTED:
         # Allow viewing only accepted participants
         abort(403)
-    from app.models.models import WishlistItem
-    items = WishlistItem.query.filter_by(user_id=user_id).all()
+    from app.models.models import WishlistItem, Event as EventModel
+    event = EventModel.query.get_or_404(event_id)
+    items = WishlistItem.query.filter_by(user_id=user_id, currency=event.budget_currency).all()
     return jsonify([
         {
             'id': item.id,
             'name': item.name,
             'price': item.price,
+            'currency': item.currency,
             'details': item.details,
             'event': item.event,
             'link': item.link

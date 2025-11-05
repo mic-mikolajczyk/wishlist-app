@@ -48,6 +48,7 @@ class WishlistItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), nullable=False)
     price = db.Column(db.Float)
+    currency = db.Column(db.String(3), default='PLN')  # NEW: currency for price consistency
     details = db.Column(db.Text)
     event = db.Column(db.String(128))
     link = db.Column(db.String(256))
@@ -55,7 +56,7 @@ class WishlistItem(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     def __repr__(self):
-        return f'<WishlistItem {self.name}>'
+        return f"<WishlistItem {self.name} {self.price or ''} {self.currency}>"
 
 
 class Event(db.Model):

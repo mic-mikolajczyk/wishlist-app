@@ -28,13 +28,10 @@
     <h5>Participants</h5>
     <ul class="collection" id="participants-list">
       {% for p in participants %}
-      <li class="collection-item">
+      <li class="collection-item participant-row {% if p.status == 'accepted' %}clickable{% endif %}" data-user-id="{{ p.user.id }}" data-nickname="{{ p.user.nickname }}" {% if p.status == 'accepted' %}style="cursor:pointer;"{% endif %}>
         <span class="title"><b>{{ p.user.nickname }}</b></span>
         {% if p.status == 'pending' %}<span class="new badge orange" data-badge-caption="Pending"></span>{% endif %}
         {% if p.is_admin %}<span class="new badge teal" data-badge-caption="Admin"></span>{% endif %}
-  {% if p.status == 'accepted' %}
-  <a href="#" class="secondary-content participant-wishlist-link" data-user-id="{{ p.user.id }}" data-nickname="{{ p.user.nickname }}"><i class="material-icons">list</i></a>
-  {% endif %}
       </li>
       {% endfor %}
     </ul>
@@ -54,46 +51,6 @@
   <div class="col s12 m6">
     <h5 id="participant-wishlist-title">Participant Wishlist</h5>
     <ul class="collection" id="participant-wishlist"></ul>
-  </div>
-</div>
-
-<div class="row">
-  <div class="col s12">
-    <h5>My Wishlist (Event Context)</h5>
-    <!-- Reuse existing wishlist modal trigger but make button full width -->
-    <a class="btn modal-trigger teal" style="width:100%;" href="#add-item-modal"><i class="material-icons left">add</i>Add Item</a>
-    <ul class="collection" id="my-wishlist-items"></ul>
-  </div>
-</div>
-
-<!-- Add/Edit Item Modal (copied from wishlist.html) -->
-<div id="add-item-modal" class="modal">
-  <div class="modal-content">
-    <h5 id="modal-title">Add Item</h5>
-    <form id="item-form">
-      <input type="hidden" id="item-id">
-      <div class="input-field">
-        <input id="item-name" name="name" type="text" required>
-        <label for="item-name">Name</label>
-      </div>
-      <div class="input-field">
-        <input id="item-price" name="price" type="number" step="0.01">
-        <label for="item-price">Price</label>
-      </div>
-      <div class="input-field">
-        <input id="item-event" name="event" type="text" value="{{ event.name }}">
-        <label for="item-event">Event (tag)</label>
-      </div>
-      <div class="input-field">
-        <input id="item-link" name="link" type="url">
-        <label for="item-link">Link (URL)</label>
-      </div>
-      <div class="input-field">
-        <textarea id="item-details" name="details" class="materialize-textarea"></textarea>
-        <label for="item-details">Details</label>
-      </div>
-      <button class="btn teal" type="submit">Save</button>
-    </form>
   </div>
 </div>
 
@@ -130,29 +87,7 @@
 {% block scripts %}
 <script>
 M.AutoInit();
-
-// Acquire event id from hidden root element to avoid inline JS templating issues
 const EVENT_ID = parseInt(document.getElementById('event-root').getAttribute('data-event-id'), 10);
-
-function loadMyWishlist() {
-  fetch('/wishlist/')
-    .then(res => res.json())
-    .then(items => {
-      const list = document.getElementById('my-wishlist-items');
-      list.innerHTML='';
-      items.forEach(item => {
-        const li=document.createElement('li');
-        li.className='collection-item avatar';
-        li.innerHTML=`<img src="/static/default_bullet.png" class="circle">
-          <span class="title"><b>${item.name}</b></span>
-          <p>Price: ${item.price || '-'} | Event: ${item.event || '-'}<br>${item.details || ''}</p>
-          <a href="${item.link || '#'}" target="_blank">${item.link? 'Link' : ''}</a>
-          <a href="#" onclick="editItem(${item.id}); return false;" class="secondary-content"><i class="material-icons">edit</i></a>
-          <a href="#" onclick="deleteItem(${item.id}); return false;" class="secondary-content" style="margin-right:2.5rem"><i class="material-icons red-text">delete</i></a>`;
-        list.appendChild(li);
-      });
-    });
-}
 
 function loadParticipantWishlist(eventId, userId, nickname) {
   fetch(`/events/${eventId}/participant/${userId}/wishlist`)
@@ -164,60 +99,18 @@ function loadParticipantWishlist(eventId, userId, nickname) {
       items.forEach(item => {
         const li=document.createElement('li');
         li.className='collection-item avatar';
-        li.innerHTML=`<img src="/static/default_bullet.png" class="circle">
-          <span class="title"><b>${item.name}</b></span>
-          <p>Price: ${item.price || '-'} | Event: ${item.event || '-'}<br>${item.details || ''}</p>
-          <a href="${item.link || '#'}" target="_blank">${item.link? 'Link' : ''}</a>`;
+        li.innerHTML=`<img src="/static/default_bullet.png" class="circle">\n          <span class="title"><b>${item.name}</b></span>\n          <p>Price: ${item.price || '-'} | Event: ${item.event || '-'}<br>${item.details || ''}</p>\n          <a href="${item.link || '#'}" target="_blank">${item.link? 'Link' : ''}</a>`;
         list.appendChild(li);
       });
     });
 }
 
-function editItem(id) {
-  fetch(`/wishlist/` + id)
-    .then(res => res.json())
-    .then(item => {
-      document.getElementById('modal-title').textContent='Edit Item';
-      document.getElementById('item-id').value=item.id;
-      document.getElementById('item-name').value=item.name;
-      document.getElementById('item-price').value=item.price;
-      document.getElementById('item-event').value=item.event;
-      document.getElementById('item-link').value=item.link;
-      document.getElementById('item-details').value=item.details;
-      M.updateTextFields();
-      const modal=M.Modal.getInstance(document.getElementById('add-item-modal'));
-      modal.open();
-    });
-}
-
-function deleteItem(id) {
-  if(confirm('Delete this item?')) {
-    fetch(`/wishlist/${id}`, {method:'DELETE'})
-      .then(r=>r.json())
-      .then(()=>loadMyWishlist());
-  }
-}
-
-document.getElementById('item-form').onsubmit=function(e){
-  e.preventDefault();
-  const id=document.getElementById('item-id').value;
-  const formData=new FormData(this);
-  const method=id? 'PUT':'POST';
-  const url='/wishlist/' + (id? id:'');
-  fetch(url, {method:method, body:JSON.stringify(Object.fromEntries(formData)), headers:{'Content-Type':'application/json'}})
-    .then(r=>r.json())
-    .then(()=>{loadMyWishlist(); const modal=M.Modal.getInstance(document.getElementById('add-item-modal')); modal.close(); this.reset();});
-};
-
 document.addEventListener('DOMContentLoaded', function() {
-  loadMyWishlist();
-  // Attach participant wishlist handlers
-  document.querySelectorAll('.participant-wishlist-link').forEach(function(el){
-    el.addEventListener('click', function(e){
-      e.preventDefault();
+  document.querySelectorAll('.participant-row.clickable').forEach(function(row){
+    row.addEventListener('click', function(){
       const userId=this.getAttribute('data-user-id');
       const nickname=this.getAttribute('data-nickname');
-  loadParticipantWishlist(EVENT_ID, userId, nickname);
+      loadParticipantWishlist(EVENT_ID, userId, nickname);
     });
   });
 });
