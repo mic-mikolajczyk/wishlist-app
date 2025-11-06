@@ -75,6 +75,8 @@ class Event(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))  # new column via migration
     # Drawing feature flag - when enabled admin generated assignments
     drawing_enabled = db.Column(db.Boolean, default=False, nullable=False)
+    # Archived flag: when true the event is read-only (no edits, invites, drawing actions)
+    archived = db.Column(db.Boolean, default=False, nullable=False)
 
     admin = db.relationship('User', foreign_keys=[admin_user_id])
     participants = db.relationship('EventParticipant', backref='event', lazy=True, cascade='all, delete-orphan')

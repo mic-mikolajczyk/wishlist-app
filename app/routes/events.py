@@ -28,10 +28,11 @@ def _load_event_or_404(event_id: int) -> Event:
 @login_required
 def dashboard():
     accepted_participations = EventParticipant.query.filter_by(user_id=current_user.id, status=EVENT_PARTICIPANT_STATUS_ACCEPTED).all()
-    events = [p.event for p in accepted_participations]
+    events_active = [p.event for p in accepted_participations if not getattr(p.event, 'archived', False)]
+    events_archived = [p.event for p in accepted_participations if getattr(p.event, 'archived', False)]
     pending_participations = EventParticipant.query.filter_by(user_id=current_user.id, status=EVENT_PARTICIPANT_STATUS_PENDING).all()
     pending_events = [p.event for p in pending_participations]
-    return render_template('dashboard.html', events=events, pending_events=pending_events)
+    return render_template('dashboard.html', events=events_active, archived_events=events_archived, pending_events=pending_events)
 
 
 # -------------------------- Create Event ----------------------------------
@@ -103,6 +104,9 @@ def edit_event(event_id: int):
     event = _load_event_or_404(event_id)
     if not _user_is_event_admin(event):
         abort(403)
+    if getattr(event, 'archived', False):
+        flash('Archived event cannot be edited. Unarchive first.', 'error')
+        return redirect(url_for('events.view_event', event_id=event.id))
     name = request.form.get('name', event.name)
     date_str = request.form.get('date')
     budget_amount = request.form.get('budget_amount')
@@ -135,6 +139,7 @@ def delete_event(event_id: int):
     event = _load_event_or_404(event_id)
     if not _user_is_event_admin(event):
         abort(403)
+    # Legacy delete kept for compatibility but UI now archives instead.
     db.session.delete(event)
     db.session.commit()
     flash('Event deleted', 'success')
@@ -161,6 +166,9 @@ def leave_event(event_id: int):
 @login_required
 def invite_user(event_id: int):
     event = _load_event_or_404(event_id)
+    if getattr(event, 'archived', False):
+        flash('Cannot invite to archived event.', 'error')
+        return redirect(url_for('events.view_event', event_id=event.id))
     if getattr(event, 'drawing_enabled', False):
         flash('Cannot invite new participants after drawing has been enabled.', 'error')
         return redirect(url_for('events.view_event', event_id=event.id))
@@ -192,6 +200,72 @@ def invite_user(event_id: int):
     db.session.commit()
     flash('Invitation sent', 'success')
     return redirect(url_for('events.view_event', event_id=event.id))
+
+
+# -------------------------- Bulk Invite Page (GET) -----------------------
+@events_bp.route('/<int:event_id>/invite', methods=['GET'])
+@login_required
+def invite_page(event_id: int):
+    """Render multi-invite search page for an event."""
+    event = _load_event_or_404(event_id)
+    # Allow only accepted participants (including admin) to invite, block if drawing enabled
+    if getattr(event, 'archived', False):
+        flash('Event archived. Unarchive to invite participants.', 'error')
+        return redirect(url_for('events.view_event', event_id=event.id))
+    if getattr(event, 'drawing_enabled', False):
+        flash('Cannot invite after drawing enabled.', 'error')
+        return redirect(url_for('events.view_event', event_id=event.id))
+    inviter_part = EventParticipant.query.filter_by(event_id=event.id, user_id=current_user.id).first()
+    if not inviter_part or inviter_part.status != EVENT_PARTICIPANT_STATUS_ACCEPTED:
+        abort(403)
+    return render_template('event_invite.html', event=event)
+
+
+# -------------------------- Bulk Invite Confirm (POST) -------------------
+@events_bp.route('/<int:event_id>/invite/confirm', methods=['POST'])
+@login_required
+def confirm_invitations(event_id: int):
+    event = _load_event_or_404(event_id)
+    if getattr(event, 'archived', False):
+        return jsonify({'error': 'Event archived; cannot invite.'}), 400
+    if getattr(event, 'drawing_enabled', False):
+        return jsonify({'error': 'Drawing enabled; cannot invite.'}), 400
+    inviter_part = EventParticipant.query.filter_by(event_id=event.id, user_id=current_user.id).first()
+    if not inviter_part or inviter_part.status != EVENT_PARTICIPANT_STATUS_ACCEPTED:
+        return jsonify({'error': 'Not authorized to invite.'}), 403
+    data = request.get_json(silent=True) or {}
+    user_ids = data.get('user_ids') or []
+    if not isinstance(user_ids, list):
+        return jsonify({'error': 'user_ids must be a list'}), 400
+    created = []
+    skipped = []
+    for uid in user_ids:
+        try:
+            uid_int = int(uid)
+        except (ValueError, TypeError):
+            skipped.append(uid)
+            continue
+        if uid_int == current_user.id:
+            skipped.append(uid_int)
+            continue  # skip self
+        existing = EventParticipant.query.filter_by(event_id=event.id, user_id=uid_int).first()
+        if existing:
+            skipped.append(uid_int)
+            continue
+        user_obj = User.query.get(uid_int)
+        if not user_obj:
+            skipped.append(uid_int)
+            continue
+        part = EventParticipant()
+        part.event_id = event.id
+        part.user_id = uid_int
+        part.status = EVENT_PARTICIPANT_STATUS_PENDING
+        part.is_admin = False
+        db.session.add(part)
+        created.append(uid_int)
+    if created:
+        db.session.commit()
+    return jsonify({'invited_count': len(created), 'invited_user_ids': created, 'skipped': skipped, 'redirect': url_for('events.view_event', event_id=event.id)})
 
 
 # -------------------------- Accept Invitation ------------------------------
@@ -249,6 +323,9 @@ def enable_drawing(event_id: int):
     event = _load_event_or_404(event_id)
     if not _user_is_event_admin(event):
         abort(403)
+    if getattr(event, 'archived', False):
+        flash('Archived event cannot enable drawing.', 'error')
+        return redirect(url_for('events.view_event', event_id=event.id))
     accepted = [p for p in EventParticipant.query.filter_by(event_id=event.id, status=EVENT_PARTICIPANT_STATUS_ACCEPTED).all()]
     if len(accepted) < 2:
         flash('Need at least 2 accepted participants to enable drawing.', 'error')
@@ -281,6 +358,8 @@ def enable_drawing(event_id: int):
 @login_required
 def draw_recipient(event_id: int):
     event = _load_event_or_404(event_id)
+    if getattr(event, 'archived', False):
+        return jsonify({'error': 'Event archived'}), 400
     if not event.drawing_enabled:
         abort(403)
     participant = EventParticipant.query.filter_by(event_id=event.id, user_id=current_user.id, status=EVENT_PARTICIPANT_STATUS_ACCEPTED).first_or_404()
@@ -300,6 +379,9 @@ def reset_drawing(event_id: int):
     event = _load_event_or_404(event_id)
     if not _user_is_event_admin(event):
         abort(403)
+    if getattr(event, 'archived', False):
+        flash('Archived event cannot reset drawing.', 'error')
+        return redirect(url_for('events.view_event', event_id=event.id))
     participants = EventParticipant.query.filter_by(event_id=event.id).all()
     for p in participants:
         p.assigned_recipient_user_id = None
@@ -315,4 +397,35 @@ def reset_drawing(event_id: int):
 @login_required
 def my_events_json():
     parts = EventParticipant.query.filter_by(user_id=current_user.id, status=EVENT_PARTICIPANT_STATUS_ACCEPTED).all()
-    return jsonify([{'id': p.event.id, 'name': p.event.name} for p in parts])
+    return jsonify([{'id': p.event.id, 'name': p.event.name, 'archived': getattr(p.event, 'archived', False)} for p in parts])
+
+
+# -------------------------- Archive / Unarchive --------------------------
+@events_bp.route('/<int:event_id>/archive', methods=['POST'])
+@login_required
+def archive_event(event_id: int):
+    event = _load_event_or_404(event_id)
+    if not _user_is_event_admin(event):
+        abort(403)
+    if getattr(event, 'archived', False):
+        flash('Event already archived.', 'error')
+        return redirect(url_for('events.view_event', event_id=event.id))
+    event.archived = True
+    db.session.commit()
+    flash('Event archived.', 'success')
+    return redirect(url_for('events.view_event', event_id=event.id))
+
+
+@events_bp.route('/<int:event_id>/unarchive', methods=['POST'])
+@login_required
+def unarchive_event(event_id: int):
+    event = _load_event_or_404(event_id)
+    if not _user_is_event_admin(event):
+        abort(403)
+    if not getattr(event, 'archived', False):
+        flash('Event is not archived.', 'error')
+        return redirect(url_for('events.view_event', event_id=event.id))
+    event.archived = False
+    db.session.commit()
+    flash('Event unarchived.', 'success')
+    return redirect(url_for('events.view_event', event_id=event.id))

@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}Invite Participants - {{ event.name }}{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col s12 m10 offset-m1">
+    <h4>Invite Participants to {{ event.name }}</h4>
+    <p class="grey-text">Search users and select multiple participants to invite. Pending invitations are created in one batch.</p>
+    <div class="input-field">
+      <input id="search" type="text" placeholder="Search by nickname, name, or surname">
+      <label for="search">Search Users</label>
+    </div>
+    <ul class="collection" id="user-list"></ul>
+    <div class="card-panel" id="selection-summary" style="display:none;">
+      <span id="selected-count">0 selected</span>
+    </div>
+    <button id="confirm-btn" class="btn-large purple" disabled style="width:100%; margin-top:1rem;"><i class="material-icons left">check_circle</i>Confirm Invitations</button>
+  <a href="{{ url_for('events.view_event', event_id=event.id) }}" class="btn grey" style="margin-top:0.75rem;"><i class="material-icons left">arrow_back</i>Back to Event</a>
+    <div id="invite-root" data-event-id="{{ event.id }}" style="display:none;"></div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+M.AutoInit();
+const EVENT_ID = parseInt(document.getElementById('invite-root').getAttribute('data-event-id'), 10);
+let usersCache = [];
+const selected = new Set();
+const listEl = document.getElementById('user-list');
+const confirmBtn = document.getElementById('confirm-btn');
+const summary = document.getElementById('selection-summary');
+const selectedCount = document.getElementById('selected-count');
+
+function updateSummary(){
+  const count = selected.size;
+  selectedCount.textContent = count + (count === 1 ? ' user selected' : ' users selected');
+  summary.style.display = count ? 'block' : 'none';
+  confirmBtn.disabled = count === 0;
+}
+
+function renderUsers(users){
+  listEl.innerHTML='';
+  users.forEach(u => {
+    const li = document.createElement('li');
+    li.className = 'collection-item avatar';
+    const checked = selected.has(u.id) ? 'checked' : '';
+    li.innerHTML = `
+      <img src="https://api.dicebear.com/9.x/thumbs/svg?radius=30&seed=${u.nickname}" alt="" class="circle">
+      <span class="title"><b>${u.nickname}</b></span>
+      <p>${u.name || ''} ${u.surname || ''}</p>
+      <label style="position:absolute; top:10px; right:10px;">
+        <input type="checkbox" class="filled-in" data-user-id="${u.id}" ${checked} />
+        <span></span>
+      </label>
+    `;
+    listEl.appendChild(li);
+  });
+  // attach listeners
+  listEl.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    cb.addEventListener('change', function(){
+      const uid = parseInt(this.getAttribute('data-user-id'), 10);
+      if(this.checked){ selected.add(uid); } else { selected.delete(uid); }
+      updateSummary();
+    });
+  });
+  updateSummary();
+}
+
+function searchUsers(query=''){
+  fetch(`/public/users?q=${encodeURIComponent(query)}`)
+    .then(r=>r.json())
+    .then(data=>{ usersCache = data; renderUsers(usersCache); });
+}
+
+document.getElementById('search').addEventListener('input', function(){
+  searchUsers(this.value);
+});
+
+document.addEventListener('DOMContentLoaded', function(){
+  searchUsers();
+});
+
+confirmBtn.addEventListener('click', function(){
+  if(selected.size === 0){ M.toast({html:'No users selected'}); return; }
+  confirmBtn.classList.add('disabled');
+  confirmBtn.innerHTML = '<span class="preloader-wrapper small active"><div class="spinner-layer spinner-blue-only"><div class="circle-clipper left"><div class="circle"></div></div><div class="gap-patch"><div class="circle"></div></div><div class="circle-clipper right"><div class="circle"></div></div></div></span> Inviting...';
+  fetch(`/events/${EVENT_ID}/invite/confirm`, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({user_ids: Array.from(selected)})
+  }).then(r=>r.json())
+    .then(res=>{
+      if(res.error){ M.toast({html: res.error}); confirmBtn.classList.remove('disabled'); confirmBtn.textContent='Confirm Invitations'; return; }
+      M.toast({html: `Invited ${res.invited_count} participants`});
+      window.location = res.redirect;
+    }).catch(()=>{
+      M.toast({html:'Error sending invitations'});
+      confirmBtn.classList.remove('disabled');
+      confirmBtn.textContent='Confirm Invitations';
+    });
+});
+</script>
+{% endblock %}

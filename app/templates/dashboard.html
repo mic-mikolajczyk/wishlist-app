@@ -3,7 +3,7 @@
 {% block content %}
 <div class="row">
   <div class="col s12">
-    <h4>Your Events</h4>
+  <h4>Your Events</h4>
     <a class="btn modal-trigger teal" href="#create-event-modal"><i class="material-icons left">add</i>Create Event</a>
     <ul class="collection" id="events-list">
       {% for event in events %}
@@ -15,7 +15,7 @@
         </p>
       </li>
       {% else %}
-      <li class="collection-item grey-text">No events yet.</li>
+      <li class="collection-item grey-text">No active events.</li>
       {% endfor %}
     </ul>
   </div>
@@ -40,6 +40,26 @@
     </ul>
   </div>
 </div>
+</div>
+
+{% if archived_events %}
+<div class="row" style="margin-top:2rem;">
+  <div class="col s12">
+    <h5>Archived Events</h5>
+    <ul class="collection" id="archived-events-list">
+      {% for event in archived_events %}
+      <li class="collection-item event-row" data-event-id="{{ event.id }}" style="cursor:pointer;">
+        <span class="title"><b>{{ event.name }}</b></span>
+        <span class="new badge grey" data-badge-caption="Archived"></span>
+        <p style="margin:0;">
+          {% if event.date %}Date: {{ event.date }}{% endif %}
+          {% if event.budget_amount %}<br>Budget: {{ event.budget_amount }} {{ event.budget_currency }}{% endif %}
+        </p>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}
 
 <!-- Create Event Modal -->
 <div id="create-event-modal" class="modal">
