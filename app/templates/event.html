@@ -75,6 +75,11 @@
     <h5>Participants</h5>
     <ul class="collection" id="participants-list">
       {% for p in participants %}
+        {% if is_admin and not event.drawing_enabled and not event.archived and not p.is_admin %}
+        <form method="post" action="{{ url_for('events.remove_participant', event_id=event.id, participant_id=p.id) }}" style="display:inline; float:right; margin-left:0.75rem;" onsubmit="return confirm('Remove this participant from the event?');">
+          <button type="submit" class="btn-small btn-flat"><i class="material-icons" style="font-size:16px;">close</i></button>
+        </form>
+        {% endif %}
       <li class="collection-item participant-row {% if p.status == 'accepted' %}clickable{% endif %}" data-user-id="{{ p.user.id }}" data-nickname="{{ p.user.nickname }}" {% if p.status == 'accepted' %}style="cursor:pointer;"{% endif %}>
         <span class="title"><b>{{ p.user.nickname }}</b></span>
         {% if p.status == 'pending' %}<span class="new badge orange" data-badge-caption="Pending"></span>{% endif %}

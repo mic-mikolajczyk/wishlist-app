@@ -429,3 +429,26 @@ def unarchive_event(event_id: int):
     db.session.commit()
     flash('Event unarchived.', 'success')
     return redirect(url_for('events.view_event', event_id=event.id))
+
+
+# -------------------------- Remove Participant ---------------------------
+@events_bp.route('/<int:event_id>/participants/<int:participant_id>/remove', methods=['POST'])
+@login_required
+def remove_participant(event_id: int, participant_id: int):
+    event = _load_event_or_404(event_id)
+    if not _user_is_event_admin(event):
+        abort(403)
+    if getattr(event, 'archived', False):
+        flash('Archived event: cannot remove participants.', 'error')
+        return redirect(url_for('events.view_event', event_id=event.id))
+    if event.drawing_enabled:
+        flash('Disable drawing before removing participants.', 'error')
+        return redirect(url_for('events.view_event', event_id=event.id))
+    participant = EventParticipant.query.filter_by(id=participant_id, event_id=event.id).first_or_404()
+    if participant.is_admin:
+        flash('Cannot remove the event admin.', 'error')
+        return redirect(url_for('events.view_event', event_id=event.id))
+    db.session.delete(participant)
+    db.session.commit()
+    flash('Participant removed.', 'success')
+    return redirect(url_for('events.view_event', event_id=event.id))
