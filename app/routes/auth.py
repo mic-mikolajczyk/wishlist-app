@@ -68,7 +68,7 @@ def login():
     if user and password is not None and check_password_hash(user.password_hash, password):
         login_user(user)
         if not request.is_json:
-            return redirect(url_for('frontend.wishlist_page'))
+            return redirect(url_for('events.dashboard'))
         return jsonify({'message': 'Logged in successfully'})
 
     if not request.is_json:

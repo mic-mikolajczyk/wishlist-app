@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+{% block title %}Event - {{ event.name }}{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col s12">
+    <div id="event-root" data-event-id="{{ event.id }}" style="display:none;"></div>
+  <h4>{{ event.name }} {% if event.archived %}<span class="new badge grey" data-badge-caption="Archived"></span>{% endif %}</h4>
+    <p>
+      {% if event.date %}<b>Date:</b> {{ event.date }} |{% endif %}
+      {% if event.budget_amount %}<b>Budget:</b> {{ event.budget_amount }} {{ event.budget_currency }}{% endif %}
+    </p>
+    {% set is_admin = (event.admin_user_id == current_user.id) %}
+    <div class="event-actions">
+      {% if is_admin %}
+        {% if event.archived %}
+          <form method="post" action="{{ url_for('events.unarchive_event', event_id=event.id) }}" onsubmit="return confirm('Unarchive this event?');">
+            <button type="submit" class="btn green"><i class="material-icons left">unarchive</i>Unarchive Event</button>
+          </form>
+        {% else %}
+          <a class="btn modal-trigger" href="#edit-event-modal"><i class="material-icons left">edit</i>Edit Event</a>
+          <form method="post" action="{{ url_for('events.enable_drawing', event_id=event.id) }}" onsubmit="return confirm('Enable drawing? This will lock invitations.');">
+            <button type="submit" class="btn {% if event.drawing_enabled %}grey disabled{% else %}purple{% endif %}"><i class="material-icons left">shuffle</i>{% if event.drawing_enabled %}Drawing Enabled{% else %}Enable Drawing{% endif %}</button>
+          </form>
+          {% if event.drawing_enabled %}
+          <form method="post" action="{{ url_for('events.reset_drawing', event_id=event.id) }}" onsubmit="return confirm('Reset all drawing assignments?');">
+            <button type="submit" class="btn orange"><i class="material-icons left">restart_alt</i>Reset Drawing</button>
+          </form>
+          {% endif %}
+          <form method="post" action="{{ url_for('events.archive_event', event_id=event.id) }}" onsubmit="return confirm('Archive this event? Drawing & edits will be disabled.');">
+            <button type="submit" class="btn grey"><i class="material-icons left">archive</i>Archive Event</button>
+          </form>
+        {% endif %}
+      {% else %}
+        {% if not event.archived %}
+        <form method="post" action="{{ url_for('events.leave_event', event_id=event.id) }}" onsubmit="return confirm('Leave this event?');">
+          <button type="submit" class="btn orange"><i class="material-icons left">exit_to_app</i>Leave Event</button>
+        </form>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col s12" style="text-align:center; margin-top:1rem;">
+    {% set my_part = None %}
+    {% for p in participants %}
+      {% if p.user_id == current_user.id %}{% set my_part = p %}{% endif %}
+    {% endfor %}
+    {% if event.archived %}
+      <button class="btn-large grey" style="min-width:260px;" disabled title="Event archived">
+        <i class="material-icons left">archive</i>Event Archived
+      </button>
+    {% elif event.drawing_enabled %}
+      {% if my_part and my_part.drawn_at and my_part.recipient %}
+        <div class="card-panel green lighten-5" id="draw-result">
+          <h5 style="margin:0;">You will give a gift to:</h5>
+          <h4 style="margin:0;" id="recipient-name">{{ my_part.recipient.nickname }}</h4>
+        </div>
+      {% else %}
+        <button id="draw-button" class="btn-large purple" style="min-width:260px;">
+          <span id="draw-btn-label"><i class="material-icons left">card_giftcard</i>Draw Your Recipient</span>
+        </button>
+      {% endif %}
+    {% else %}
+      <button class="btn-large grey" style="min-width:260px;" disabled title="Drawing not enabled yet">
+        <i class="material-icons left">lock</i>Drawing not available
+      </button>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row">
+  <div class="col s12 m6">
+    <h5>Participants</h5>
+    <ul class="collection" id="participants-list">
+      {% for p in participants %}
+        {% if is_admin and not event.drawing_enabled and not event.archived and not p.is_admin %}
+        <form method="post" action="{{ url_for('events.remove_participant', event_id=event.id, participant_id=p.id) }}" style="display:inline; float:right; margin-left:0.75rem;" onsubmit="return confirm('Remove this participant from the event?');">
+          <button type="submit" class="btn-small btn-flat"><i class="material-icons" style="font-size:16px;">close</i></button>
+        </form>
+        {% endif %}
+      <li class="collection-item participant-row {% if p.status == 'accepted' %}clickable{% endif %}" data-user-id="{{ p.user.id }}" data-nickname="{{ p.user.nickname }}" {% if p.status == 'accepted' %}style="cursor:pointer;"{% endif %}>
+        <span class="title"><b>{{ p.user.nickname }}</b></span>
+        {% if p.status == 'pending' %}<span class="new badge orange" data-badge-caption="Pending"></span>{% endif %}
+        {% if p.is_admin %}<span class="new badge teal" data-badge-caption="Admin"></span>{% endif %}
+        {% if event.drawing_enabled and p.user_id == (my_part.recipient.user_id if my_part and my_part.recipient else None) %}
+          <span class="badge purple" data-badge-caption="Your Recipient"></span>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  {% if is_admin and not event.drawing_enabled and not event.archived %}
+    <a class="btn teal" href="{{ url_for('events.invite_page', event_id=event.id) }}"><i class="material-icons left">group_add</i>Invite Participants</a>
+    {% endif %}
+  </div>
+
+  <div class="col s12 m6">
+    <h5 id="participant-wishlist-title">Participant Wishlist</h5>
+    <ul class="collection" id="participant-wishlist"></ul>
+  </div>
+</div>
+
+<!-- Edit Event Modal -->
+<div id="edit-event-modal" class="modal">
+  <div class="modal-content">
+    <h5>Edit Event</h5>
+    <form method="post" action="{{ url_for('events.edit_event', event_id=event.id) }}">
+      <div class="input-field">
+        <input name="name" id="edit-event-name" type="text" value="{{ event.name }}" required>
+        <label for="edit-event-name" class="active">Event Name</label>
+      </div>
+      <div class="input-field">
+        <input name="date" id="edit-event-date" type="date" value="{{ event.date }}">
+        <label for="edit-event-date" class="active">Date</label>
+      </div>
+      <div class="input-field">
+        <input name="budget_amount" id="edit-event-budget" type="number" step="0.01" value="{{ event.budget_amount }}">
+        <label for="edit-event-budget" class="active">Budget Amount</label>
+      </div>
+      <div class="input-field">
+        <select name="budget_currency" id="edit-event-currency">
+          <option value="PLN" {% if event.budget_currency=='PLN' %}selected{% endif %}>PLN</option>
+          <option value="EUR" {% if event.budget_currency=='EUR' %}selected{% endif %}>EUR</option>
+          <option value="USD" {% if event.budget_currency=='USD' %}selected{% endif %}>USD</option>
+        </select>
+        <label for="edit-event-currency">Currency</label>
+      </div>
+      <button type="submit" class="btn teal">Save</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+M.AutoInit();
+const EVENT_ID = parseInt(document.getElementById('event-root').getAttribute('data-event-id'), 10);
+
+function loadParticipantWishlist(eventId, userId, nickname) {
+  fetch(`/events/${eventId}/participant/${userId}/wishlist`)
+    .then(res => res.json())
+    .then(items => {
+      document.getElementById('participant-wishlist-title').textContent = nickname + "'s Wishlist";
+      const list = document.getElementById('participant-wishlist');
+      list.innerHTML='';
+      items.forEach(item => {
+        const li=document.createElement('li');
+        li.className='collection-item avatar';
+        li.innerHTML=`<img src="/static/default_bullet.png" class="circle">\n          <span class="title"><b>${item.name}</b></span>\n          <p>Price: ${item.price || '-'} | Event: ${item.event || '-'}<br>${item.details || ''}</p>\n          <a href="${item.link || '#'}" target="_blank">${item.link? 'Link' : ''}</a>`;
+        list.appendChild(li);
+      });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.participant-row.clickable').forEach(function(row){
+    row.addEventListener('click', function(){
+      const userId=this.getAttribute('data-user-id');
+      const nickname=this.getAttribute('data-nickname');
+      loadParticipantWishlist(EVENT_ID, userId, nickname);
+    });
+  });
+  const drawBtn = document.getElementById('draw-button');
+  if (drawBtn) {
+    drawBtn.addEventListener('click', function(){
+      drawBtn.classList.add('disabled');
+      const label = document.getElementById('draw-btn-label');
+      label.innerHTML = '<span class="preloader-wrapper small active"><div class="spinner-layer spinner-blue-only"><div class="circle-clipper left"><div class="circle"></div></div><div class="gap-patch"><div class="circle"></div></div><div class="circle-clipper right"><div class="circle"></div></div></div></span> Drawing...';
+      let resultData = null;
+      fetch(`/events/${EVENT_ID}/drawing/draw`, {method:'POST'})
+        .then(r=>r.json())
+        .then(data=>{
+          if(data.error){
+            M.toast({html: data.error});
+            return;
+          }
+          resultData = data;
+          // Delay reveal by 3s to visualize drawing process
+          setTimeout(function(){
+            const panel = document.createElement('div');
+            panel.className='card-panel green lighten-5';
+            panel.id='draw-result';
+            panel.innerHTML=`<h5 style='margin:0;'>You will give a gift to:</h5><h4 style='margin:0;' id='recipient-name'>${resultData.recipient_nickname}</h4>`;
+            drawBtn.parentNode.replaceChild(panel, drawBtn);
+            document.querySelectorAll('#participants-list li').forEach(function(li){
+              if(li.getAttribute('data-nickname') === resultData.recipient_nickname){
+                li.classList.add('purple','lighten-5');
+              }
+            });
+          }, 3000);
+        }).catch(err=>{
+          M.toast({html: 'Draw failed'});
+        });
+    });
+  }
+});
+</script>
+<style>
+/* Responsive stacking for event action buttons */
+@media (max-width: 600px) {
+  .event-actions {display:flex; flex-direction:column; align-items:stretch; gap:0.5rem;}
+  .event-actions a.btn,
+  .event-actions form .btn {width:100%;}
+  .event-actions form {margin:0;}
+}
+</style>
+{% endblock %}

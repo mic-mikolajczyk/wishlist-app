@@ -23,7 +23,7 @@ def wishlist_page():
 @frontend_bp.route('/')
 def home():
     if current_user.is_authenticated:
-        return redirect(url_for('frontend.wishlist_page'))
+        return redirect(url_for('events.dashboard'))
     return render_template('home.html')
 
 

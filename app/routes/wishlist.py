@@ -19,6 +19,7 @@ def get_item(item_id):
         'id': item.id,
         'name': item.name,
         'price': item.price,
+        'currency': item.currency,
         'details': item.details,
         'event': item.event,
         'link': item.link
@@ -33,6 +34,7 @@ def get_wishlist():
         'id': item.id,
         'name': item.name,
         'price': item.price,
+        'currency': item.currency,
         'details': item.details,
         'event': item.event,
         'link': item.link
@@ -46,6 +48,7 @@ def add_item():
     item = WishlistItem(
         name=data.get('name'),  # type: ignore
         price=data.get('price'),  # type: ignore
+        currency=(data.get('currency') or 'PLN'),  # type: ignore
         details=data.get('details'),  # type: ignore
         event=data.get('event'),  # type: ignore
         link=data.get('link'),  # type: ignore
@@ -65,6 +68,7 @@ def edit_item(item_id):
     data = request.get_json()
     item.name = data.get('name', item.name)
     item.price = data.get('price', item.price)
+    item.currency = data.get('currency', item.currency)
     item.details = data.get('details', item.details)
     item.event = data.get('event', item.event)
     item.link = data.get('link', item.link)

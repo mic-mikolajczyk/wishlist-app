@@ -26,6 +26,14 @@
                 <label for="item-price">Price</label>
             </div>
             <div class="input-field">
+                <select id="item-currency" name="currency">
+                    <option value="PLN" selected>PLN</option>
+                    <option value="EUR">EUR</option>
+                    <option value="USD">USD</option>
+                </select>
+                <label for="item-currency">Currency</label>
+            </div>
+            <div class="input-field">
                 <input id="item-event" name="event" type="text">
                 <label for="item-event">Event</label>
             </div>
@@ -60,7 +68,7 @@ function loadWishlist() {
                 li.innerHTML = `
                     <img src="/static/default_bullet.png" alt="•" class="circle">
                     <span class="title"><b>${item.name}</b></span>
-                    <p>Price: $${item.price || '-'}<br>Event: ${item.event || '-'}<br>${item.details || ''}</p>
+                    <p>Price: ${item.price !== null && item.price !== undefined ? item.price : '-'} ${item.currency || ''}<br>Event: ${item.event || '-'}<br>${item.details || ''}</p>
                     <a href="${item.link || '#'}" target="_blank">${item.link ? 'Link' : ''}</a>
                     <a href="#!" class="secondary-content" onclick="editItem(${item.id})"><i class="material-icons">edit</i></a>
                     <a href="#!" class="secondary-content" style="margin-right: 2.5rem;" onclick="deleteItem(${item.id})"><i class="material-icons red-text">delete</i></a>
@@ -79,6 +87,10 @@ function editItem(id) {
             document.getElementById('item-name').value = item.name;
             document.getElementById('item-price').value = item.price;
             document.getElementById('item-event').value = item.event;
+            if(item.currency){
+                document.getElementById('item-currency').value = item.currency;
+                M.FormSelect.init(document.getElementById('item-currency'));
+            }
             document.getElementById('item-link').value = item.link;
             document.getElementById('item-details').value = item.details;
             M.updateTextFields();
