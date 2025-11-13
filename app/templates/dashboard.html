@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Events Dashboard{% endblock %}
+{% block title %}{{ _('Events Dashboard') }}{% endblock %}
 {% block content %}
 <div class="row">
   <div class="col s12">
@@ -28,14 +28,14 @@
       <li class="collection-item">
         <span><b>{{ event.name }}</b></span>
         <form method="post" action="{{ url_for('events.accept_invitation', event_id=event.id) }}" style="display:inline;">
-          <button class="btn-small green" type="submit">Accept</button>
+          <button class="btn-small green" type="submit">{{ _('Accept') }}</button>
         </form>
         <form method="post" action="{{ url_for('events.reject_invitation', event_id=event.id) }}" style="display:inline;">
-          <button class="btn-small red" type="submit">Reject</button>
+          <button class="btn-small red" type="submit">{{ _('Reject') }}</button>
         </form>
       </li>
       {% else %}
-      <li class="collection-item grey-text">No pending invitations.</li>
+  <li class="collection-item grey-text">{{ _('No pending invitations.') }}</li>
       {% endfor %}
     </ul>
   </div>
@@ -45,15 +45,15 @@
 {% if archived_events %}
 <div class="row" style="margin-top:2rem;">
   <div class="col s12">
-    <h5>Archived Events</h5>
+  <h5>{{ _('Archived Events') }}</h5>
     <ul class="collection" id="archived-events-list">
       {% for event in archived_events %}
       <li class="collection-item event-row" data-event-id="{{ event.id }}" style="cursor:pointer;">
         <span class="title"><b>{{ event.name }}</b></span>
         <span class="new badge grey" data-badge-caption="Archived"></span>
         <p style="margin:0;">
-          {% if event.date %}Date: {{ event.date }}{% endif %}
-          {% if event.budget_amount %}<br>Budget: {{ event.budget_amount }} {{ event.budget_currency }}{% endif %}
+          {% if event.date %}{{ _('Date') }}: {{ event.date }}{% endif %}
+          {% if event.budget_amount %}<br>{{ _('Budget') }}: {{ event.budget_amount }} {{ event.budget_currency }}{% endif %}
         </p>
       </li>
       {% endfor %}

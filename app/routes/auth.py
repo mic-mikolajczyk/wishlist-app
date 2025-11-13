@@ -16,6 +16,7 @@ from werkzeug.security import generate_password_hash
 from app import db
 from app import login_manager
 from app.models.models import User
+from flask_babel import _
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -49,7 +50,7 @@ def register():
     db.session.commit()
     # If the request is from a form, redirect to login page with a message
     if not request.is_json:
-        flash('Registration successful! Please log in.', 'success')
+        flash(_('Registration successful! Please log in.'), 'success')
         return redirect(url_for('frontend.login_page'))
     return jsonify({'message': 'User registered successfully'}), 201
 
@@ -72,7 +73,7 @@ def login():
         return jsonify({'message': 'Logged in successfully'})
 
     if not request.is_json:
-        flash('Invalid credentials', 'error')
+        flash(_('Invalid credentials'), 'error')
         return redirect(url_for('frontend.login_page'))
     return jsonify({'error': 'Invalid credentials'}), 401
 
@@ -81,7 +82,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    flash('You have been logged out.', 'success')
+    flash(_('You have been logged out.'), 'success')
     return redirect(url_for('frontend.home'))
 
 
@@ -113,20 +114,20 @@ def profile():
 
         # Validate nickname: only allow letters, numbers, -, _
         if not re.match(r'^[A-Za-z0-9_-]+$', nickname):
-            flash('Nickname can only contain letters, numbers, hyphens, and underscores.', 'error')
+            flash(_('Nickname can only contain letters, numbers, hyphens, and underscores.'), 'error')
             return redirect(url_for('frontend.profile_page'))
 
         # Check for duplicate nickname
         existing = User.query.filter(User.nickname == nickname, User.id != current_user.id).first()
         if existing:
-            flash('This nickname is already taken. Please choose another.', 'error')
+            flash(_('This nickname is already taken. Please choose another.'), 'error')
             return redirect(url_for('frontend.profile_page'))
 
         current_user.nickname = nickname
         current_user.name = name
         current_user.surname = surname
         db.session.commit()
-        flash('Profile updated!', 'success')
+        flash(_('Profile updated!'), 'success')
         return redirect(url_for('frontend.profile_page'))
 
     else:

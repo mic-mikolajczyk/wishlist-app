@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify, render_template, redirect, url_for, abort, flash
+from flask_babel import _
 from flask_login import login_required, current_user
 from datetime import datetime
 
@@ -51,10 +52,10 @@ def create_event():
         budget_amount = request.form.get('budget_amount')
         budget_currency = (request.form.get('budget_currency') or 'PLN').upper()
     if not name:
-        flash('Event name is required', 'error')
+        flash(_('Event name is required'), 'error')
         return redirect(url_for('events.dashboard'))
     if budget_currency not in ALLOWED_CURRENCIES:
-        flash('Unsupported currency', 'error')
+        flash(_('Unsupported currency'), 'error')
         return redirect(url_for('events.dashboard'))
     from datetime import datetime as _dt
     event_date = None
@@ -62,12 +63,12 @@ def create_event():
         try:
             event_date = _dt.strptime(date_str, '%Y-%m-%d').date()
         except ValueError:
-            flash('Invalid date format (expected YYYY-MM-DD)', 'error')
+            flash(_('Invalid date format (expected YYYY-MM-DD)'), 'error')
             return redirect(url_for('events.dashboard'))
     try:
         budget_amount_val = float(budget_amount) if budget_amount else None
     except ValueError:
-        flash('Budget must be a number', 'error')
+        flash(_('Budget must be a number'), 'error')
         return redirect(url_for('events.dashboard'))
     event = Event()
     event.name = name
@@ -84,7 +85,7 @@ def create_event():
     participant.status = EVENT_PARTICIPANT_STATUS_ACCEPTED
     db.session.add(participant)
     db.session.commit()
-    flash('Event created', 'success')
+    flash(_('Event created'), 'success')
     return redirect(url_for('events.view_event', event_id=event.id))
 
 
@@ -105,7 +106,7 @@ def edit_event(event_id: int):
     if not _user_is_event_admin(event):
         abort(403)
     if getattr(event, 'archived', False):
-        flash('Archived event cannot be edited. Unarchive first.', 'error')
+        flash(_('Archived event cannot be edited. Unarchive first.'), 'error')
         return redirect(url_for('events.view_event', event_id=event.id))
     name = request.form.get('name', event.name)
     date_str = request.form.get('date')
@@ -116,19 +117,19 @@ def edit_event(event_id: int):
         try:
             event.date = _dt.strptime(date_str, '%Y-%m-%d').date()
         except ValueError:
-            flash('Invalid date format', 'error')
+            flash(_('Invalid date format'), 'error')
             return redirect(url_for('events.view_event', event_id=event.id))
     event.name = name
     if budget_amount:
         try:
             event.budget_amount = float(budget_amount)
         except ValueError:
-            flash('Budget must be numeric', 'error')
+            flash(_('Budget must be numeric'), 'error')
             return redirect(url_for('events.view_event', event_id=event.id))
     if budget_currency in ALLOWED_CURRENCIES:
         event.budget_currency = budget_currency
     db.session.commit()
-    flash('Event updated', 'success')
+    flash(_('Event updated'), 'success')
     return redirect(url_for('events.view_event', event_id=event.id))
 
 
@@ -142,7 +143,7 @@ def delete_event(event_id: int):
     # Legacy delete kept for compatibility but UI now archives instead.
     db.session.delete(event)
     db.session.commit()
-    flash('Event deleted', 'success')
+    flash(_('Event deleted'), 'success')
     return redirect(url_for('events.dashboard'))
 
 
@@ -153,11 +154,11 @@ def leave_event(event_id: int):
     event = _load_event_or_404(event_id)
     participant = EventParticipant.query.filter_by(event_id=event.id, user_id=current_user.id).first_or_404()
     if participant.is_admin:
-        flash('Admin cannot leave. Delete the event instead.', 'error')
+        flash(_('Admin cannot leave. Delete the event instead.'), 'error')
         return redirect(url_for('events.view_event', event_id=event.id))
     db.session.delete(participant)
     db.session.commit()
-    flash('You left the event', 'success')
+    flash(_('You left the event'), 'success')
     return redirect(url_for('events.dashboard'))
 
 
@@ -167,10 +168,10 @@ def leave_event(event_id: int):
 def invite_user(event_id: int):
     event = _load_event_or_404(event_id)
     if getattr(event, 'archived', False):
-        flash('Cannot invite to archived event.', 'error')
+        flash(_('Cannot invite to archived event.'), 'error')
         return redirect(url_for('events.view_event', event_id=event.id))
     if getattr(event, 'drawing_enabled', False):
-        flash('Cannot invite new participants after drawing has been enabled.', 'error')
+        flash(_('Cannot invite new participants after drawing has been enabled.'), 'error')
         return redirect(url_for('events.view_event', event_id=event.id))
     inviter_part = EventParticipant.query.filter_by(event_id=event.id, user_id=current_user.id).first()
     if not inviter_part or inviter_part.status != EVENT_PARTICIPANT_STATUS_ACCEPTED:
@@ -181,15 +182,15 @@ def invite_user(event_id: int):
     else:
         target_nickname = request.form.get('nickname')
     if not target_nickname:
-        flash('Nickname required to invite', 'error')
+        flash(_('Nickname required to invite'), 'error')
         return redirect(url_for('events.view_event', event_id=event.id))
     user = User.query.filter_by(nickname=target_nickname).first()
     if not user:
-        flash('User not found', 'error')
+        flash(_('User not found'), 'error')
         return redirect(url_for('events.view_event', event_id=event.id))
     existing = EventParticipant.query.filter_by(event_id=event.id, user_id=user.id).first()
     if existing:
-        flash('User already invited or participating', 'error')
+        flash(_('User already invited or participating'), 'error')
         return redirect(url_for('events.view_event', event_id=event.id))
     participant = EventParticipant()
     participant.event_id = event.id
@@ -198,7 +199,7 @@ def invite_user(event_id: int):
     participant.is_admin = False
     db.session.add(participant)
     db.session.commit()
-    flash('Invitation sent', 'success')
+    flash(_('Invitation sent'), 'success')
     return redirect(url_for('events.view_event', event_id=event.id))
 
 
@@ -210,10 +211,10 @@ def invite_page(event_id: int):
     event = _load_event_or_404(event_id)
     # Allow only accepted participants (including admin) to invite, block if drawing enabled
     if getattr(event, 'archived', False):
-        flash('Event archived. Unarchive to invite participants.', 'error')
+        flash(_('Event archived. Unarchive to invite participants.'), 'error')
         return redirect(url_for('events.view_event', event_id=event.id))
     if getattr(event, 'drawing_enabled', False):
-        flash('Cannot invite after drawing enabled.', 'error')
+        flash(_('Cannot invite after drawing enabled.'), 'error')
         return redirect(url_for('events.view_event', event_id=event.id))
     inviter_part = EventParticipant.query.filter_by(event_id=event.id, user_id=current_user.id).first()
     if not inviter_part or inviter_part.status != EVENT_PARTICIPANT_STATUS_ACCEPTED:
@@ -275,7 +276,7 @@ def accept_invitation(event_id: int):
     participant = EventParticipant.query.filter_by(event_id=event_id, user_id=current_user.id, status=EVENT_PARTICIPANT_STATUS_PENDING).first_or_404()
     participant.status = EVENT_PARTICIPANT_STATUS_ACCEPTED
     db.session.commit()
-    flash('Invitation accepted', 'success')
+    flash(_('Invitation accepted'), 'success')
     return redirect(url_for('events.view_event', event_id=event_id))
 
 
@@ -286,7 +287,7 @@ def reject_invitation(event_id: int):
     participant = EventParticipant.query.filter_by(event_id=event_id, user_id=current_user.id, status=EVENT_PARTICIPANT_STATUS_PENDING).first_or_404()
     db.session.delete(participant)
     db.session.commit()
-    flash('Invitation rejected', 'success')
+    flash(_('Invitation rejected'), 'success')
     return redirect(url_for('events.dashboard'))
 
 
@@ -324,24 +325,24 @@ def enable_drawing(event_id: int):
     if not _user_is_event_admin(event):
         abort(403)
     if getattr(event, 'archived', False):
-        flash('Archived event cannot enable drawing.', 'error')
+        flash(_('Archived event cannot enable drawing.'), 'error')
         return redirect(url_for('events.view_event', event_id=event.id))
     accepted = [p for p in EventParticipant.query.filter_by(event_id=event.id, status=EVENT_PARTICIPANT_STATUS_ACCEPTED).all()]
     if len(accepted) < 2:
-        flash('Need at least 2 accepted participants to enable drawing.', 'error')
+        flash(_('Need at least 2 accepted participants to enable drawing.'), 'error')
         return redirect(url_for('events.view_event', event_id=event.id))
     if event.drawing_enabled:
-        flash('Drawing already enabled.', 'error')
+        flash(_('Drawing already enabled.'), 'error')
         return redirect(url_for('events.view_event', event_id=event.id))
     import random
     user_ids = [p.user_id for p in accepted]
-    for _ in range(50):
+    for attempt in range(50):
         perm = user_ids[:]
         random.shuffle(perm)
         if all(uid != perm[i] for i, uid in enumerate(user_ids)):
             break
     else:
-        flash('Failed to generate drawing assignments, please retry.', 'error')
+        flash(_('Failed to generate drawing assignments, please retry.'), 'error')
         return redirect(url_for('events.view_event', event_id=event.id))
     assignment_map = {user_ids[i]: perm[i] for i in range(len(user_ids))}
     for p in accepted:
@@ -349,7 +350,7 @@ def enable_drawing(event_id: int):
         p.drawn_at = None
     event.drawing_enabled = True
     db.session.commit()
-    flash('Drawing enabled. Participants can now draw their recipient.', 'success')
+    flash(_('Drawing enabled. Participants can now draw their recipient.'), 'success')
     return redirect(url_for('events.view_event', event_id=event.id))
 
 
@@ -380,7 +381,7 @@ def reset_drawing(event_id: int):
     if not _user_is_event_admin(event):
         abort(403)
     if getattr(event, 'archived', False):
-        flash('Archived event cannot reset drawing.', 'error')
+        flash(_('Archived event cannot reset drawing.'), 'error')
         return redirect(url_for('events.view_event', event_id=event.id))
     participants = EventParticipant.query.filter_by(event_id=event.id).all()
     for p in participants:
@@ -388,7 +389,7 @@ def reset_drawing(event_id: int):
         p.drawn_at = None
     event.drawing_enabled = False
     db.session.commit()
-    flash('Drawing has been reset.', 'success')
+    flash(_('Drawing has been reset.'), 'success')
     return redirect(url_for('events.view_event', event_id=event.id))
 
 
@@ -408,11 +409,11 @@ def archive_event(event_id: int):
     if not _user_is_event_admin(event):
         abort(403)
     if getattr(event, 'archived', False):
-        flash('Event already archived.', 'error')
+        flash(_('Event already archived.'), 'error')
         return redirect(url_for('events.view_event', event_id=event.id))
     event.archived = True
     db.session.commit()
-    flash('Event archived.', 'success')
+    flash(_('Event archived.'), 'success')
     return redirect(url_for('events.view_event', event_id=event.id))
 
 
@@ -423,11 +424,11 @@ def unarchive_event(event_id: int):
     if not _user_is_event_admin(event):
         abort(403)
     if not getattr(event, 'archived', False):
-        flash('Event is not archived.', 'error')
+        flash(_('Event is not archived.'), 'error')
         return redirect(url_for('events.view_event', event_id=event.id))
     event.archived = False
     db.session.commit()
-    flash('Event unarchived.', 'success')
+    flash(_('Event unarchived.'), 'success')
     return redirect(url_for('events.view_event', event_id=event.id))
 
 
@@ -439,16 +440,16 @@ def remove_participant(event_id: int, participant_id: int):
     if not _user_is_event_admin(event):
         abort(403)
     if getattr(event, 'archived', False):
-        flash('Archived event: cannot remove participants.', 'error')
+        flash(_('Archived event: cannot remove participants.'), 'error')
         return redirect(url_for('events.view_event', event_id=event.id))
     if event.drawing_enabled:
-        flash('Disable drawing before removing participants.', 'error')
+        flash(_('Disable drawing before removing participants.'), 'error')
         return redirect(url_for('events.view_event', event_id=event.id))
     participant = EventParticipant.query.filter_by(id=participant_id, event_id=event.id).first_or_404()
     if participant.is_admin:
-        flash('Cannot remove the event admin.', 'error')
+        flash(_('Cannot remove the event admin.'), 'error')
         return redirect(url_for('events.view_event', event_id=event.id))
     db.session.delete(participant)
     db.session.commit()
-    flash('Participant removed.', 'success')
+    flash(_('Participant removed.'), 'success')
     return redirect(url_for('events.view_event', event_id=event.id))

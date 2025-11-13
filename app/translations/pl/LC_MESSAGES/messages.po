@@ -70,6 +70,336 @@ msgstr "Zaloguj się na swoje konto"
 msgid "Register a new account"
 msgstr "Zarejestruj nowe konto"
 
+# New interface translations
+msgid "Login"
+msgstr "Zaloguj"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "Password"
+msgstr "Hasło"
+
+msgid "Don't have an account? Register"
+msgstr "Nie masz konta? Zarejestruj się"
+
+msgid "Register"
+msgstr "Zarejestruj"
+
+msgid "Already have an account? Login"
+msgstr "Masz już konto? Zaloguj się"
+
+msgid "Invite Participants"
+msgstr "Zaproś uczestników"
+
+msgid "Invite Participants to"
+msgstr "Zaproś uczestników do"
+
+msgid "Search users and select multiple participants to invite. Pending invitations are created in one batch."
+msgstr "Wyszukaj użytkowników i wybierz wielu uczestników do zaproszenia. Oczekujące zaproszenia są tworzone jednorazowo."
+
+msgid "Search by nickname, name, or surname"
+msgstr "Szukaj po nicku, imieniu lub nazwisku"
+
+msgid "Search Users"
+msgstr "Szukaj użytkowników"
+
+msgid "selected"
+msgstr "wybranych"
+
+msgid "Confirm Invitations"
+msgstr "Potwierdź zaproszenia"
+
+msgid "Back to Event"
+msgstr "Powrót do wydarzenia"
+
+msgid "user selected"
+msgstr "użytkownik wybrany"
+
+msgid "users selected"
+msgstr "użytkowników wybranych"
+
+msgid "No users selected"
+msgstr "Nie wybrano użytkowników"
+
+msgid "Inviting..."
+msgstr "Zapraszanie..."
+
+msgid "Invited"
+msgstr "Zaproszono"
+
+msgid "participants"
+msgstr "uczestników"
+
+msgid "Error sending invitations"
+msgstr "Błąd wysyłania zaproszeń"
+
+msgid "Events Dashboard"
+msgstr "Panel wydarzeń"
+
+msgid "Accept"
+msgstr "Akceptuj"
+
+msgid "Reject"
+msgstr "Odrzuć"
+
+msgid "No pending invitations."
+msgstr "Brak oczekujących zaproszeń."
+
+msgid "Archived Events"
+msgstr "Zarchiwizowane wydarzenia"
+
+msgid "Add Item"
+msgstr "Dodaj element"
+
+msgid "Name"
+msgstr "Nazwa"
+
+msgid "Price"
+msgstr "Cena"
+
+msgid "Currency"
+msgstr "Waluta"
+
+msgid "Event"
+msgstr "Wydarzenie"
+
+msgid "Link (URL)"
+msgstr "Link (URL)"
+
+msgid "Details"
+msgstr "Szczegóły"
+
+msgid "Save"
+msgstr "Zapisz"
+
+msgid "Edit Item"
+msgstr "Edytuj element"
+
+msgid "Delete this item?"
+msgstr "Usunąć ten element?"
+
+msgid "Find Users"
+msgstr "Znajdź użytkowników"
+
+msgid "Min Price"
+msgstr "Cena min."
+
+msgid "Max Price"
+msgstr "Cena maks."
+
+msgid "Filter"
+msgstr "Filtruj"
+
+msgid "Link"
+msgstr "Link"
+
+msgid "Profile"
+msgstr "Profil"
+
+msgid "Your Profile"
+msgstr "Twój profil"
+
+msgid "Avatar"
+msgstr "Awatar"
+
+msgid "Nickname"
+msgstr "Nick"
+
+msgid "Surname"
+msgstr "Nazwisko"
+
+msgid "Update Profile"
+msgstr "Aktualizuj profil"
+
+msgid "Event"
+msgstr "Wydarzenie"
+
+msgid "Archived"
+msgstr "Zarchiwizowane"
+
+msgid "Budget"
+msgstr "Budżet"
+
+msgid "Leave this event?"
+msgstr "Opuścić to wydarzenie?"
+
+msgid "Event Archived"
+msgstr "Wydarzenie zarchiwizowane"
+
+msgid "Event archived"
+msgstr "Wydarzenie zarchiwizowane"
+
+msgid "Drawing not enabled yet"
+msgstr "Losowanie jeszcze niewłączone"
+
+msgid "Drawing not available"
+msgstr "Losowanie niedostępne"
+
+msgid "Draw Your Recipient"
+msgstr "Losuj swojego uczestnika"
+
+msgid "You will give a gift to:"
+msgstr "Podarujesz prezent dla:
+
+msgid "Participants"
+msgstr "Uczestnicy"
+
+msgid "Pending"
+msgstr "Oczekujące"
+
+msgid "Admin"
+msgstr "Administrator"
+
+msgid "Your Recipient"
+msgstr "Twój obdarowywany"
+
+msgid "Participant Wishlist"
+msgstr "Lista życzeń uczestnika"
+
+msgid "Edit Event"
+msgstr "Edytuj wydarzenie"
+
+msgid "Event Name"
+msgstr "Nazwa wydarzenia"
+
+msgid "Budget Amount"
+msgstr "Kwota budżetu"
+
+msgid "Drawing..."
+msgstr "Losowanie..."
+
+msgid "Registration successful! Please log in."
+msgstr "Rejestracja udana! Zaloguj się."
+
+msgid "Invalid credentials"
+msgstr "Nieprawidłowe dane logowania"
+
+msgid "You have been logged out."
+msgstr "Wylogowano."
+
+msgid "Nickname can only contain letters, numbers, hyphens, and underscores."
+msgstr "Nick może zawierać tylko litery, cyfry, myślniki i podkreślenia."
+
+msgid "This nickname is already taken. Please choose another."
+msgstr "Ten nick jest już zajęty. Wybierz inny."
+
+msgid "Profile updated!"
+msgstr "Profil zaktualizowany!"
+
+msgid "Event name is required"
+msgstr "Nazwa wydarzenia jest wymagana"
+
+msgid "Unsupported currency"
+msgstr "Nieobsługiwana waluta"
+
+msgid "Invalid date format (expected YYYY-MM-DD)"
+msgstr "Nieprawidłowy format daty (oczekiwano RRRR-MM-DD)"
+
+msgid "Budget must be a number"
+msgstr "Budżet musi być liczbą"
+
+msgid "Event created"
+msgstr "Wydarzenie utworzone"
+
+msgid "Archived event cannot be edited. Unarchive first."
+msgstr "Zarchiwizowanego wydarzenia nie można edytować. Najpierw cofnij archiwizację."
+
+msgid "Invalid date format"
+msgstr "Nieprawidłowy format daty"
+
+msgid "Budget must be numeric"
+msgstr "Budżet musi być liczbowy"
+
+msgid "Event updated"
+msgstr "Wydarzenie zaktualizowane"
+
+msgid "Event deleted"
+msgstr "Wydarzenie usunięte"
+
+msgid "Admin cannot leave. Delete the event instead."
+msgstr "Administrator nie może opuścić wydarzenia. Usuń wydarzenie."
+
+msgid "You left the event"
+msgstr "Opuściłeś wydarzenie"
+
+msgid "Cannot invite to archived event."
+msgstr "Nie można zapraszać do zarchiwizowanego wydarzenia."
+
+msgid "Cannot invite new participants after drawing has been enabled."
+msgstr "Nie można zapraszać po włączeniu losowania."
+
+msgid "Nickname required to invite"
+msgstr "Nick wymagany do zaproszenia"
+
+msgid "User not found"
+msgstr "Użytkownik nie znaleziony"
+
+msgid "User already invited or participating"
+msgstr "Użytkownik już zaproszony lub uczestniczy"
+
+msgid "Invitation sent"
+msgstr "Zaproszenie wysłane"
+
+msgid "Event archived. Unarchive to invite participants."
+msgstr "Wydarzenie zarchiwizowane. Cofnij archiwizację by zapraszać."
+
+msgid "Cannot invite after drawing enabled."
+msgstr "Nie można zapraszać po włączeniu losowania."
+
+msgid "Invitation accepted"
+msgstr "Zaproszenie zaakceptowane"
+
+msgid "Invitation rejected"
+msgstr "Zaproszenie odrzucone"
+
+msgid "Archived event cannot enable drawing."
+msgstr "Zarchiwizowane wydarzenie nie może włączyć losowania."
+
+msgid "Need at least 2 accepted participants to enable drawing."
+msgstr "Wymagani co najmniej 2 zaakceptowani uczestnicy, aby włączyć losowanie."
+
+msgid "Drawing already enabled."
+msgstr "Losowanie już włączone."
+
+msgid "Failed to generate drawing assignments, please retry."
+msgstr "Nie udało się wygenerować przydziałów losowania, spróbuj ponownie."
+
+msgid "Drawing enabled. Participants can now draw their recipient."
+msgstr "Losowanie włączone. Uczestnicy mogą teraz losować obdarowywanego."
+
+msgid "Archived event cannot reset drawing."
+msgstr "Zarchiwizowane wydarzenie nie może resetować losowania."
+
+msgid "Drawing has been reset."
+msgstr "Losowanie zresetowane."
+
+msgid "Event already archived."
+msgstr "Wydarzenie już zarchiwizowane."
+
+msgid "Event archived."
+msgstr "Wydarzenie zarchiwizowane."
+
+msgid "Event is not archived."
+msgstr "Wydarzenie nie jest zarchiwizowane."
+
+msgid "Event unarchived."
+msgstr "Wydarzenie odarchiwizowane."
+
+msgid "Archived event: cannot remove participants."
+msgstr "Zarchiwizowane wydarzenie: nie można usuwać uczestników."
+
+msgid "Disable drawing before removing participants."
+msgstr "Wyłącz losowanie przed usunięciem uczestników."
+
+msgid "Cannot remove the event admin."
+msgstr "Nie można usunąć administratora wydarzenia."
+
+msgid "Participant removed."
+msgstr "Uczestnik usunięty."
+
+msgid "Create Event"
+msgstr "Utwórz Wydarzenie"
 
 #: templates/dashboard.html
 msgid "Your Events"

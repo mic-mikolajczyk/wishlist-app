@@ -1,29 +1,29 @@
 {% extends 'base.html' %}
-{% block title %}Register - Wishlist App{% endblock %}
+{% block title %}{{ _('Register') }} - {{ _('Wishlist App') }}{% endblock %}
 {% block content %}
 <div class="row">
     <div class="col s12 m6 offset-m3">
         <div class="card">
             <div class="card-content">
-                <span class="card-title">Register</span>
+                <span class="card-title">{{ _('Register') }}</span>
                 <form method="post" action="/auth/register">
                     <div class="input-field">
                         <input id="email" name="email" type="email" required>
-                        <label for="email">Email</label>
+                        <label for="email">{{ _('Email') }}</label>
                     </div>
                     <div class="input-field">
                         <input id="nickname" name="nickname" type="text" required>
-                        <label for="nickname">Nickname</label>
+                        <label for="nickname">{{ _('Nickname') }}</label>
                     </div>
                     <div class="input-field">
                         <input id="password" name="password" type="password" required>
-                        <label for="password">Password</label>
+                        <label for="password">{{ _('Password') }}</label>
                     </div>
-                    <button class="btn teal" type="submit">Register</button>
+                    <button class="btn teal" type="submit">{{ _('Register') }}</button>
                 </form>
             </div>
             <div class="card-action">
-                <a href="/login">Already have an account? Login</a>
+                <a href="/login">{{ _('Already have an account? Login') }}</a>
             </div>
         </div>
     </div>

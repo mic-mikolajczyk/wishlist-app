@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
-{% block title %}My Wishlist - Wishlist App{% endblock %}
+{% block title %}{{ _('My Wishlist') }} - {{ _('Wishlist App') }}{% endblock %}
 {% block content %}
 <div class="row">
     <div class="col s12">
-        <h4>My Wishlist</h4>
-        <a class="btn modal-trigger teal" href="#add-item-modal"><i class="material-icons left">add</i>Add Item</a>
+    <h4>{{ _('My Wishlist') }}</h4>
+    <a class="btn modal-trigger teal" href="#add-item-modal"><i class="material-icons left">add</i>{{ _('Add Item') }}</a>
         <ul class="collection" id="wishlist-items">
             <!-- Wishlist items will be loaded here by JS -->
         </ul>
@@ -14,16 +14,16 @@
 <!-- Add/Edit Item Modal -->
 <div id="add-item-modal" class="modal">
     <div class="modal-content">
-        <h5 id="modal-title">Add Item</h5>
+    <h5 id="modal-title">{{ _('Add Item') }}</h5>
         <form id="item-form">
             <input type="hidden" id="item-id">
             <div class="input-field">
                 <input id="item-name" name="name" type="text" required>
-                <label for="item-name">Name</label>
+                <label for="item-name">{{ _('Name') }}</label>
             </div>
             <div class="input-field">
                 <input id="item-price" name="price" type="number" step="0.01">
-                <label for="item-price">Price</label>
+                <label for="item-price">{{ _('Price') }}</label>
             </div>
             <div class="input-field">
                 <select id="item-currency" name="currency">
@@ -31,22 +31,22 @@
                     <option value="EUR">EUR</option>
                     <option value="USD">USD</option>
                 </select>
-                <label for="item-currency">Currency</label>
+                <label for="item-currency">{{ _('Currency') }}</label>
             </div>
             <div class="input-field">
                 <input id="item-event" name="event" type="text">
-                <label for="item-event">Event</label>
+                <label for="item-event">{{ _('Event') }}</label>
             </div>
             <div class="input-field">
                 <input id="item-link" name="link" type="url">
-                <label for="item-link">Link (URL)</label>
+                <label for="item-link">{{ _('Link (URL)') }}</label>
             </div>
             <div class="input-field">
                 <textarea id="item-details" name="details" class="materialize-textarea"></textarea>
-                <label for="item-details">Details</label>
+                <label for="item-details">{{ _('Details') }}</label>
             </div>
             <!-- Picture upload removed -->
-            <button class="btn teal" type="submit">Save</button>
+            <button class="btn teal" type="submit">{{ _('Save') }}</button>
         </form>
     </div>
 </div>
@@ -82,7 +82,7 @@ function editItem(id) {
     fetch(`/wishlist/` + id)
         .then(res => res.json())
         .then(item => {
-            document.getElementById('modal-title').textContent = 'Edit Item';
+            document.getElementById('modal-title').textContent = "{{ _('Edit Item') }}";
             document.getElementById('item-id').value = item.id;
             document.getElementById('item-name').value = item.name;
             document.getElementById('item-price').value = item.price;
@@ -100,7 +100,7 @@ function editItem(id) {
 }
 
 function deleteItem(id) {
-    if (confirm('Delete this item?')) {
+    if (confirm("{{ _('Delete this item?') }}")) {
         fetch(`/wishlist/${id}`, { method: 'DELETE' })
             .then(res => res.json())
             .then(() => loadWishlist());

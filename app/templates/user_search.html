@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
-{% block title %}Find Users - Wishlist App{% endblock %}
+{% block title %}{{ _('Find Users') }} - {{ _('Wishlist App') }}{% endblock %}
 {% block content %}
 <div class="row">
     <div class="col s12 m8 offset-m2">
-        <h4>Find Users</h4>
+    <h4>{{ _('Find Users') }}</h4>
         <div class="input-field">
-            <input id="search" type="text" placeholder="Search by nickname, name, or surname">
-            <label for="search">Search Users</label>
+            <input id="search" type="text" placeholder="{{ _('Search by nickname, name, or surname') }}">
+            <label for="search">{{ _('Search Users') }}</label>
         </div>
         <ul class="collection" id="user-list"></ul>
     </div>
@@ -14,11 +14,11 @@
 <!-- Public Wishlist Modal -->
 <div id="wishlist-modal" class="modal">
     <div class="modal-content">
-        <h5 id="wishlist-modal-title">Wishlist</h5>
+    <h5 id="wishlist-modal-title">{{ _('Wishlist') }}</h5>
         <div class="input-field">
-            <input id="min-price" type="number" step="0.01" placeholder="Min Price">
-            <input id="max-price" type="number" step="0.01" placeholder="Max Price">
-            <button class="btn teal" id="filter-btn">Filter</button>
+            <input id="min-price" type="number" step="0.01" placeholder="{{ _('Min Price') }}">
+            <input id="max-price" type="number" step="0.01" placeholder="{{ _('Max Price') }}">
+            <button class="btn teal" id="filter-btn">{{ _('Filter') }}</button>
         </div>
         <ul class="collection" id="public-wishlist"></ul>
     </div>
@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function showWishlist(userId, nickname) {
     const modal = M.Modal.getInstance(document.getElementById('wishlist-modal'));
-    document.getElementById('wishlist-modal-title').textContent = `${nickname}'s Wishlist`;
+    document.getElementById('wishlist-modal-title').textContent = `${nickname} {{ _('\'s Wishlist') }}`;
     loadPublicWishlist(userId);
     modal.open();
     document.getElementById('filter-btn').onclick = function() {
@@ -85,8 +85,8 @@ function loadPublicWishlist(userId) {
                 li.innerHTML = `
                     <img src="/static/default_bullet.png" alt="" class="circle">
                     <span class="title"><b>${item.name}</b></span>
-                    <p>Price: ${item.price !== null && item.price !== undefined ? item.price : '-'} ${item.currency || ''}<br>Event: ${item.event || '-'}<br>${item.details || ''}</p>
-                    <a href="${item.link || '#'}" target="_blank">${item.link ? 'Link' : ''}</a>
+                    <p>{{ _('Price') }}: ${item.price !== null && item.price !== undefined ? item.price : '-'} ${item.currency || ''}<br>{{ _('Event') }}: ${item.event || '-'}<br>${item.details || ''}</p>
+                    <a href="${item.link || '#'}" target="_blank">${item.link ? "{{ _('Link') }}" : ''}</a>
                 `;
                 list.appendChild(li);
             });
