@@ -240,7 +240,7 @@ msgid "Draw Your Recipient"
 msgstr "Losuj swojego uczestnika"
 
 msgid "You will give a gift to:"
-msgstr "Podarujesz prezent dla:
+msgstr "Podarujesz prezent dla:"
 
 msgid "Participants"
 msgstr "Uczestnicy"
@@ -268,6 +268,46 @@ msgstr "Kwota budżetu"
 
 msgid "Drawing..."
 msgstr "Losowanie..."
+
+# Additional event action & status translations
+msgid "Unarchive Event"
+msgstr "Przywróć wydarzenie"
+
+msgid "Unarchive this event?"
+msgstr "Przywrócić to wydarzenie?"
+
+msgid "Enable Drawing"
+msgstr "Włącz losowanie"
+
+msgid "Drawing Enabled"
+msgstr "Losowanie włączone"
+
+msgid "Enable drawing? This will lock invitations."
+msgstr "Włączyć losowanie? To zablokuje zaproszenia."
+
+msgid "Reset Drawing"
+msgstr "Resetuj losowanie"
+
+msgid "Reset all drawing assignments?"
+msgstr "Zresetować wszystkie przydziały losowania?"
+
+msgid "Archive Event"
+msgstr "Zarchiwizuj wydarzenie"
+
+msgid "Archive this event? Drawing & edits will be disabled."
+msgstr "Zarchiwizować to wydarzenie? Losowanie i edycje będą wyłączone."
+
+msgid "Remove this participant from the event?"
+msgstr "Usunąć tego uczestnika z wydarzenia?"
+
+msgid "Draw failed"
+msgstr "Losowanie nie powiodło się"
+
+msgid "Date"
+msgstr "Data"
+
+msgid "'s Wishlist"
+msgstr "Lista życzeń"
 
 msgid "Registration successful! Please log in."
 msgstr "Rejestracja udana! Zaloguj się."

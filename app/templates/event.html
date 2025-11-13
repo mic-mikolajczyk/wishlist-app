@@ -13,26 +13,26 @@
     <div class="event-actions">
       {% if is_admin %}
         {% if event.archived %}
-          <form method="post" action="{{ url_for('events.unarchive_event', event_id=event.id) }}" onsubmit="return confirm('Unarchive this event?');">
-            <button type="submit" class="btn green"><i class="material-icons left">unarchive</i>Unarchive Event</button>
+          <form method="post" action="{{ url_for('events.unarchive_event', event_id=event.id) }}" data-confirm="{{ _('Unarchive this event?') }}">
+            <button type="submit" class="btn green"><i class="material-icons left">unarchive</i>{{ _('Unarchive Event') }}</button>
           </form>
         {% else %}
           <a class="btn modal-trigger" href="#edit-event-modal"><i class="material-icons left">edit</i>{{ _('Edit Event') }}</a>
-          <form method="post" action="{{ url_for('events.enable_drawing', event_id=event.id) }}" onsubmit="return confirm('Enable drawing? This will lock invitations.');">
+          <form method="post" action="{{ url_for('events.enable_drawing', event_id=event.id) }}" data-confirm="{{ _('Enable drawing? This will lock invitations.') }}">
             <button type="submit" class="btn {% if event.drawing_enabled %}grey disabled{% else %}purple{% endif %}"><i class="material-icons left">shuffle</i>{% if event.drawing_enabled %}{{ _('Drawing Enabled') }}{% else %}{{ _('Enable Drawing') }}{% endif %}</button>
           </form>
           {% if event.drawing_enabled %}
-          <form method="post" action="{{ url_for('events.reset_drawing', event_id=event.id) }}" onsubmit="return confirm('Reset all drawing assignments?');">
+          <form method="post" action="{{ url_for('events.reset_drawing', event_id=event.id) }}" data-confirm="{{ _('Reset all drawing assignments?') }}">
             <button type="submit" class="btn orange"><i class="material-icons left">restart_alt</i>{{ _('Reset Drawing') }}</button>
           </form>
           {% endif %}
-          <form method="post" action="{{ url_for('events.archive_event', event_id=event.id) }}" onsubmit="return confirm('Archive this event? Drawing & edits will be disabled.');">
+          <form method="post" action="{{ url_for('events.archive_event', event_id=event.id) }}" data-confirm="{{ _('Archive this event? Drawing & edits will be disabled.') }}">
             <button type="submit" class="btn grey"><i class="material-icons left">archive</i>{{ _('Archive Event') }}</button>
           </form>
         {% endif %}
       {% else %}
         {% if not event.archived %}
-  <form method="post" action="{{ url_for('events.leave_event', event_id=event.id) }}" onsubmit="return confirm('Leave this event?');">
+  <form method="post" action="{{ url_for('events.leave_event', event_id=event.id) }}" data-confirm="{{ _('Leave this event?') }}">
           <button type="submit" class="btn orange"><i class="material-icons left">exit_to_app</i>{{ _('Leave Event') }}</button>
         </form>
         {% endif %}
@@ -54,7 +54,7 @@
     {% elif event.drawing_enabled %}
       {% if my_part and my_part.drawn_at and my_part.recipient %}
   <div class="card-panel green lighten-5" id="draw-result">
-          <h5 style="margin:0;">You will give a gift to:</h5>
+          <h5 style="margin:0;">{{ _('You will give a gift to:') }}</h5>
           <h4 style="margin:0;" id="recipient-name">{{ my_part.recipient.nickname }}</h4>
         </div>
       {% else %}
@@ -76,7 +76,7 @@
     <ul class="collection" id="participants-list">
       {% for p in participants %}
         {% if is_admin and not event.drawing_enabled and not event.archived and not p.is_admin %}
-        <form method="post" action="{{ url_for('events.remove_participant', event_id=event.id, participant_id=p.id) }}" style="display:inline; float:right; margin-left:0.75rem;" onsubmit="return confirm('Remove this participant from the event?');">
+  <form method="post" action="{{ url_for('events.remove_participant', event_id=event.id, participant_id=p.id) }}" style="display:inline; float:right; margin-left:0.75rem;" data-confirm="{{ _('Remove this participant from the event?') }}">
           <button type="submit" class="btn-small btn-flat"><i class="material-icons" style="font-size:16px;">close</i></button>
         </form>
         {% endif %}
@@ -135,24 +135,38 @@
 <script>
 M.AutoInit();
 const EVENT_ID = parseInt(document.getElementById('event-root').getAttribute('data-event-id'), 10);
+// Localized UI text constants
+const TXT_GIFT_TO = "{{ _('You will give a gift to:') }}";
+const TXT_PRICE = "{{ _('Price') }}";
+const TXT_EVENT = "{{ _('Event') }}";
+const TXT_LINK = "{{ _('Link') }}";
+const TXT_DRAW_FAILED = "{{ _('Draw failed') }}";
+const TXT_S_WISHLIST = "{{ _('\'s Wishlist') }}";
 
 function loadParticipantWishlist(eventId, userId, nickname) {
   fetch(`/events/${eventId}/participant/${userId}/wishlist`)
     .then(res => res.json())
     .then(items => {
-      document.getElementById('participant-wishlist-title').textContent = nickname + " {{ _('\'s Wishlist') }}";
+  document.getElementById('participant-wishlist-title').textContent = nickname + " " + TXT_S_WISHLIST;
       const list = document.getElementById('participant-wishlist');
       list.innerHTML='';
       items.forEach(item => {
         const li=document.createElement('li');
         li.className='collection-item avatar';
-        li.innerHTML=`<img src="/static/default_bullet.png" class="circle">\n          <span class="title"><b>${item.name}</b></span>\n          <p>Price: ${item.price || '-'} | Event: ${item.event || '-'}<br>${item.details || ''}</p>\n          <a href="${item.link || '#'}" target="_blank">${item.link? 'Link' : ''}</a>`;
+  li.innerHTML=`<img src="/static/default_bullet.png" class="circle">\n          <span class="title"><b>${item.name}</b></span>\n          <p>${TXT_PRICE}: ${item.price || '-'} | ${TXT_EVENT}: ${item.event || '-'}<br>${item.details || ''}</p>\n          <a href="${item.link || '#'}" target="_blank">${item.link? TXT_LINK : ''}</a>`;
         list.appendChild(li);
       });
     });
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+  // Attach confirm handlers for forms declaring data-confirm
+  document.querySelectorAll('form[data-confirm]').forEach(function(f){
+    f.addEventListener('submit', function(e){
+      const msg = f.getAttribute('data-confirm');
+      if(!confirm(msg)) { e.preventDefault(); }
+    });
+  });
   document.querySelectorAll('.participant-row.clickable').forEach(function(row){
     row.addEventListener('click', function(){
       const userId=this.getAttribute('data-user-id');
@@ -180,7 +194,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const panel = document.createElement('div');
             panel.className='card-panel green lighten-5';
             panel.id='draw-result';
-            panel.innerHTML=`<h5 style='margin:0;'>You will give a gift to:</h5><h4 style='margin:0;' id='recipient-name'>${resultData.recipient_nickname}</h4>`;
+            panel.innerHTML=`<h5 style='margin:0;'>${TXT_GIFT_TO}</h5><h4 style='margin:0;' id='recipient-name'>${resultData.recipient_nickname}</h4>`;
             drawBtn.parentNode.replaceChild(panel, drawBtn);
             document.querySelectorAll('#participants-list li').forEach(function(li){
               if(li.getAttribute('data-nickname') === resultData.recipient_nickname){
@@ -189,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
           }, 3000);
         }).catch(err=>{
-          M.toast({html: 'Draw failed'});
+          M.toast({html: TXT_DRAW_FAILED});
         });
     });
   }
