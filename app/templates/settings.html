@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('Settings') }}{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col s12 m8 l6">
+    <h4>{{ _('Settings') }}</h4>
+    <div class="card">
+      <div class="card-content">
+        <span class="card-title" style="font-size:1.2rem;">{{ _('Language') }}</span>
+        <p style="margin-bottom:1rem;">{{ _('Select your preferred language:') }}</p>
+        <div class="collection" style="margin-bottom:1.5rem;">
+          <a class="collection-item" href="{{ url_for('set_language', locale='pl') }}">Polski {% if get_locale()=='pl' %}<span class="new badge" data-badge-caption="{{ _('Current') }}"></span>{% endif %}</a>
+          <a class="collection-item" href="{{ url_for('set_language', locale='en') }}">English {% if get_locale()=='en' %}<span class="new badge" data-badge-caption="{{ _('Current') }}"></span>{% endif %}</a>
+        </div>
+        {% if current_user.is_authenticated %}
+        <form method="post" action="{{ url_for('auth.logout') }}" style="margin-top:1rem;">
+          <button type="submit" class="btn red"><i class="material-icons left">exit_to_app</i>{{ _('Logout') }}</button>
+        </form>
+        {% else %}
+        <div style="margin-top:1rem;">
+          <a href="{{ url_for('frontend.login_page') }}" class="btn teal"><i class="material-icons left">login</i>{{ _('Login') }}</a>
+          <a href="{{ url_for('frontend.register_page') }}" class="btn teal"><i class="material-icons left">person_add</i>{{ _('Register') }}</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

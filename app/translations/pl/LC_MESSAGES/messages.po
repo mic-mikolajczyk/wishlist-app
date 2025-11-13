@@ -448,3 +448,12 @@ msgstr "Twoje wydarzenia"
 # Auth / redirects
 msgid "Please log in to access this page."
 msgstr "Zaloguj się, aby uzyskać dostęp do tej strony."
+
+msgid "Settings"
+msgstr "Ustawienia"
+
+msgid "Select your preferred language:"
+msgstr "Wybierz preferowany język:"
+
+msgid "Current"
+msgstr "Obecny"

@@ -20,7 +20,7 @@
         }
         .bottom-nav .btn-flat {
             height: 64px;  /* Increased height for more space */
-            flex-grow: 1;
+            flex: 1 1 0;
             border-radius: 0;
             margin: 0;
             display: flex;
@@ -28,7 +28,9 @@
             justify-content: center;  /* Centers content vertically */
             align-items: center;
             color: #ffffff;
-            padding: 8px 0 4px;  /* Adjusted padding: top, right/left, bottom */
+            padding: 6px 0 2px;  /* Slightly reduced to minimize vertical shift */
+            position: relative;
+            overflow: hidden;
         }
         .bottom-nav .btn-flat.active {
             background-color: rgba(0, 27, 24, 0.199);
@@ -36,17 +38,25 @@
         }
         .bottom-nav .btn-flat i {
             display: block;
-            margin-bottom: 0;  /* Reduced to 0 */
             font-size: 24px;
-            margin-top: 0;  /* Reduced to 0 */
-            line-height: 24px;  /* Added to control height */
+            line-height: 24px;
+            margin: 0 0 4px 0; /* fixed spacing below icon */
+            flex: 0 0 auto;
         }
         .bottom-nav .btn-flat span {
+            display: block;
             font-size: 12px;
             white-space: nowrap;
-            margin-bottom: 0;  /* Reduced to 0 */
-            line-height: 14px;  /* Added to control height */
+            line-height: 14px;
+            flex: 0 0 auto;
+            max-width: 100%;
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 0 4px; /* ensure long language words don't push layout */
         }
+        /* Ensure consistent layout even if a translation creates very long words */
+        .bottom-nav .btn-flat .material-icons + span { margin-top: 0; }
         body {
             padding-bottom: 64px;  /* Updated to match the new navigation height */
         }
@@ -62,6 +72,10 @@
     <nav>
         <div class="nav-wrapper teal">
             <a href="/" class="brand-logo" style="margin-left: 1rem;">{{ _('Givvi') }}</a>
+            <!-- Settings (gear) icon aligned right -->
+            <a href="{{ url_for('frontend.settings_page') }}" class="right" style="margin-right:1rem;display:flex;align-items:center;">
+              <i class="material-icons" style="line-height:64px;">settings</i>
+            </a>
             <ul id="nav-desktop" class="right hide-on-med-and-down" style="margin-right: 15px;">
                 {% if current_user.is_authenticated %}
                     <li><a href="{{ url_for('events.dashboard') }}">{{ _('Events') }}</a></li>
@@ -121,15 +135,6 @@
                 <i class="material-icons">person</i>
                 <span>{{ _('Profile') }}</span>
             </a>
-            <!-- Mobile language switch -->
-            <a href="#lang-modal" class="btn-flat waves-effect waves-light modal-trigger">
-                <i class="material-icons">language</i>
-                <span>{{ _('Language') }}</span>
-            </a>
-            <a href="#logout-modal" class="btn-flat waves-effect waves-light modal-trigger">
-                <i class="material-icons">exit_to_app</i>
-                <span>{{ _('Logout') }}</span>
-            </a>
         {% else %}
             <a href="{{ url_for('frontend.login_page') }}" class="btn-flat waves-effect waves-light">
                 <i class="material-icons">login</i>
@@ -142,11 +147,6 @@
             <a href="/" class="btn-flat waves-effect waves-light">
                 <i class="material-icons">home</i>
                 <span>{{ _('Home') }}</span>
-            </a>
-            <!-- Mobile language switch for guests -->
-            <a href="#lang-modal" class="btn-flat waves-effect waves-light modal-trigger">
-                <i class="material-icons">language</i>
-                <span>{{ _('Language') }}</span>
             </a>
         {% endif %}
     </div>
@@ -167,16 +167,6 @@
     </div>
     {% endif %}
 
-    <!-- Language Modal (mobile) -->
-    <div id="lang-modal" class="modal bottom-sheet">
-        <div class="modal-content">
-            <h4>{{ _('Language') }}</h4>
-            <div class="collection">
-                <a class="collection-item" href="{{ url_for('set_language', locale='pl') }}">Polski</a>
-                <a class="collection-item" href="{{ url_for('set_language', locale='en') }}">English</a>
-            </div>
-        </div>
-    </div>
     
     <!-- Materialize JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>

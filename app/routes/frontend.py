@@ -41,3 +41,9 @@ def register_page():
 @login_required
 def profile_page():
     return render_template('profile.html', user=current_user)
+
+ 
+@frontend_bp.route('/settings')
+def settings_page():
+    """Settings page: language selection always visible; logout shown if authenticated."""
+    return render_template('settings.html')
