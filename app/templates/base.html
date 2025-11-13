@@ -60,6 +60,21 @@
         body {
             padding-bottom: 64px;  /* Updated to match the new navigation height */
         }
+        /* Password toggle styling */
+        .input-field .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 0.75rem;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #009688;
+            user-select: none;
+        }
+        .input-field .toggle-password:hover,
+        .input-field .toggle-password:focus {
+            color: #00695c;
+            outline: none;
+        }
         @media only screen and (max-width: 992px) {
             .bottom-nav {
                 display: flex;
@@ -71,7 +86,7 @@
 <body>
     <nav>
         <div class="nav-wrapper teal">
-            <a href="/" class="brand-logo" style="margin-left: 1rem;">{{ _('Givvi') }}</a>
+            <a href="/" class="brand-logo">{{ _('Givvi') }}</a>
             <!-- Settings (gear) icon aligned right -->
             <a href="{{ url_for('frontend.settings_page') }}" class="right" style="margin-right:1rem;display:flex;align-items:center;">
               <i class="material-icons" style="line-height:64px;">settings</i>
@@ -172,6 +187,30 @@
                 if (link.getAttribute('href') === currentPath) {
                     link.classList.add('active');
                 }
+            });
+
+            // Password visibility toggles
+            var toggleIcons = document.querySelectorAll('.toggle-password');
+            toggleIcons.forEach(function(icon){
+                var input = icon.parentElement.querySelector('input[type="password"], input[type="text"]');
+                icon.addEventListener('click', function(){
+                    if(!input) return;
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.textContent = 'visibility_off';
+                        icon.setAttribute('aria-label', icon.getAttribute('data-hide-label'));
+                    } else {
+                        input.type = 'password';
+                        icon.textContent = 'visibility';
+                        icon.setAttribute('aria-label', icon.getAttribute('data-show-label'));
+                    }
+                });
+                icon.addEventListener('keydown', function(e){
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        icon.click();
+                    }
+                });
             });
         });
     </script>

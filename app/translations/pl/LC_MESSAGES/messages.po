@@ -457,3 +457,10 @@ msgstr "Wybierz preferowany język:"
 
 msgid "Current"
 msgstr "Obecny"
+
+# Password toggle accessibility labels
+msgid "Show password"
+msgstr "Pokaż hasło"
+
+msgid "Hide password"
+msgstr "Ukryj hasło"

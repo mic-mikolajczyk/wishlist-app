@@ -16,8 +16,10 @@
                         <label for="nickname">{{ _('Nickname') }}</label>
                     </div>
                     <div class="input-field">
-                        <input id="password" name="password" type="password" required>
-                        <label for="password">{{ _('Password') }}</label>
+                <input id="password" name="password" type="password" required>
+                <label for="password">{{ _('Password') }}</label>
+                <i class="material-icons toggle-password" tabindex="0" role="button"
+                   aria-label="{{ _('Show password') }}" data-show-label="{{ _('Show password') }}" data-hide-label="{{ _('Hide password') }}">visibility</i>
                     </div>
                     <button class="btn teal" type="submit">{{ _('Register') }}</button>
                 </form>
