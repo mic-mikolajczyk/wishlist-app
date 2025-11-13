@@ -143,6 +143,7 @@ const TXT_LINK = "{{ _('Link') }}";
 const TXT_DRAW_FAILED = "{{ _('Draw failed') }}";
 const TXT_S_WISHLIST = "{{ _('\'s Wishlist') }}";
 const TXT_DRAW_YOUR_RECIPIENT = "{{ _('Draw Your Recipient') }}";
+const TXT_DRAWING = "{{ _('Drawing...') }}";
 
 function loadParticipantWishlist(eventId, userId, nickname) {
   fetch(`/events/${eventId}/participant/${userId}/wishlist`)
@@ -178,56 +179,82 @@ document.addEventListener('DOMContentLoaded', function() {
   const drawBtn = document.getElementById('draw-button');
   if (drawBtn) {
     drawBtn.addEventListener('click', function(){
-      drawBtn.classList.add('disabled');
-      const label = document.getElementById('draw-btn-label');
-  label.innerHTML = '<span class="preloader-wrapper small active"><div class="spinner-layer spinner-blue-only"><div class="circle-clipper left"><div class="circle"></div></div><div class="gap-patch"><div class="circle"></div></div><div class="circle-clipper right"><div class="circle"></div></div></div></span> ' + "{{ _('Drawing...') }}";
+      // Replace button with progress bar wrapper
+      const wrapper = document.createElement('div');
+      wrapper.id='draw-progress-wrapper';
+      wrapper.style.minWidth='260px';
+      wrapper.style.display='inline-block';
+      wrapper.innerHTML = `\n        <div class="draw-progress-shell" style="position:relative;height:48px;border-radius:4px;overflow:hidden;background:#6a1b9a;">\n          <div id="draw-bar" style="background:#9c27b0;height:100%;width:0%;transition:width 0.15s linear;"></div>\n          <div class="progress-label" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:500;color:#fff;">${TXT_DRAWING}</div>\n        </div>`;
+      drawBtn.parentNode.replaceChild(wrapper, drawBtn);
+      let progress = 0;
       let resultData = null;
-      fetch(`/events/${EVENT_ID}/drawing/draw`, {method:'POST'})
-        .then(r=>r.json())
-        .then(data=>{
-          if(data.error){
-            // If already drawn, show panel using returned recipient nickname
-            if (data.recipient_nickname) {
-              resultData = { recipient_nickname: data.recipient_nickname };
-              setTimeout(function(){
-                const panel = document.createElement('div');
-                panel.className='card-panel green lighten-5';
-                panel.id='draw-result';
-                panel.innerHTML=`<h5 style='margin:0;'>${TXT_GIFT_TO}</h5><h4 style='margin:0;' id='recipient-name'>${resultData.recipient_nickname}</h4>`;
-                drawBtn.parentNode.replaceChild(panel, drawBtn);
-                document.querySelectorAll('#participants-list li').forEach(function(li){
-                  if(li.getAttribute('data-nickname') === resultData.recipient_nickname){
-                    li.classList.add('purple','lighten-5');
-                  }
-                });
-              }, 800);
-            } else {
-              M.toast({html: data.error});
-              // Reset button state
-              drawBtn.classList.remove('disabled');
-              label.innerHTML = `<i class="material-icons left">card_giftcard</i>${TXT_DRAW_YOUR_RECIPIENT}`;
-            }
-            return;
-          }
-          resultData = data;
-          // Delay reveal by 3s to visualize drawing process
-          setTimeout(function(){
+      let finished = false;
+      const interval = setInterval(()=>{
+        progress += 100/30; // ~3s total
+        if (progress > 100) progress = 100;
+        const bar = document.getElementById('draw-bar');
+        if (bar) bar.style.width = progress + '%';
+        if (progress >= 100 && !finished){
+          finished = true;
+          clearInterval(interval);
+          if (resultData && resultData.recipient_nickname){
             const panel = document.createElement('div');
             panel.className='card-panel green lighten-5';
             panel.id='draw-result';
             panel.innerHTML=`<h5 style='margin:0;'>${TXT_GIFT_TO}</h5><h4 style='margin:0;' id='recipient-name'>${resultData.recipient_nickname}</h4>`;
-            drawBtn.parentNode.replaceChild(panel, drawBtn);
+            wrapper.parentNode.replaceChild(panel, wrapper);
             document.querySelectorAll('#participants-list li').forEach(function(li){
               if(li.getAttribute('data-nickname') === resultData.recipient_nickname){
                 li.classList.add('purple','lighten-5');
               }
             });
-          }, 3000);
-        }).catch(err=>{
+          } else {
+            // Unexpected missing data
+            M.toast({html: TXT_DRAW_FAILED});
+            const restoredBtn = document.createElement('button');
+            restoredBtn.id='draw-button';
+            restoredBtn.className='btn-large purple';
+            restoredBtn.style.minWidth='260px';
+            restoredBtn.innerHTML = `<span id="draw-btn-label"><i class="material-icons left">card_giftcard</i>${TXT_DRAW_YOUR_RECIPIENT}</span>`;
+            wrapper.parentNode.replaceChild(restoredBtn, wrapper);
+          }
+        }
+      }, 100);
+      fetch(`/events/${EVENT_ID}/drawing/draw`, {method:'POST'})
+        .then(r=>r.json())
+        .then(data=>{
+          if(data.error){
+            if (data.recipient_nickname){
+              resultData = { recipient_nickname: data.recipient_nickname };
+              // accelerate to completion if already drawn
+              progress = 100;
+            } else {
+              M.toast({html: data.error});
+              clearInterval(interval);
+              // Restore button
+              const restoredBtn = document.createElement('button');
+              restoredBtn.id='draw-button';
+              restoredBtn.className='btn-large purple';
+              restoredBtn.style.minWidth='260px';
+              restoredBtn.innerHTML = `<span id="draw-btn-label"><i class="material-icons left">card_giftcard</i>${TXT_DRAW_YOUR_RECIPIENT}</span>`;
+              wrapper.parentNode.replaceChild(restoredBtn, wrapper);
+              // Re-bind handler
+              restoredBtn.addEventListener('click', arguments.callee);
+            }
+            return;
+          }
+          resultData = data; // will be shown when progress completes
+        })
+        .catch(err=>{
           M.toast({html: TXT_DRAW_FAILED});
-          // Reset button state on failure
-          drawBtn.classList.remove('disabled');
-          label.innerHTML = `<i class="material-icons left">card_giftcard</i>${TXT_DRAW_YOUR_RECIPIENT}`;
+          clearInterval(interval);
+          const restoredBtn = document.createElement('button');
+          restoredBtn.id='draw-button';
+          restoredBtn.className='btn-large purple';
+          restoredBtn.style.minWidth='260px';
+          restoredBtn.innerHTML = `<span id="draw-btn-label"><i class="material-icons left">card_giftcard</i>${TXT_DRAW_YOUR_RECIPIENT}</span>`;
+          wrapper.parentNode.replaceChild(restoredBtn, wrapper);
+          restoredBtn.addEventListener('click', arguments.callee);
         });
     });
   }
