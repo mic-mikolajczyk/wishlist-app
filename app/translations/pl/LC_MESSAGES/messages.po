@@ -444,3 +444,7 @@ msgstr "Utwórz Wydarzenie"
 #: templates/dashboard.html
 msgid "Your Events"
 msgstr "Twoje wydarzenia"
+
+# Auth / redirects
+msgid "Please log in to access this page."
+msgstr "Zaloguj się, aby uzyskać dostęp do tej strony."

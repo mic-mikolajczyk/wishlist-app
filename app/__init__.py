@@ -1,5 +1,5 @@
 from flask import Flask
-from flask import redirect, request, session, url_for
+from flask import redirect, request, session, url_for, flash
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -21,6 +21,8 @@ def create_app():
 
     db.init_app(app)
     login_manager.init_app(app)
+    # Redirect unauthenticated users to login page
+    login_manager.login_view = 'frontend.login_page'
     migrate.init_app(app, db)
     # Locale selection helper
 
@@ -54,5 +56,13 @@ def create_app():
         if locale in app.config.get('LANGUAGES', []):
             session['lang'] = locale
         return redirect(request.referrer or url_for('frontend.home'))
+
+    @login_manager.unauthorized_handler
+    def _unauthorized():
+        from flask_babel import _
+        # Flash a translated message and redirect to login, preserving next
+        flash(_('Please log in to access this page.'), 'error')
+        next_url = request.url
+        return redirect(url_for('frontend.login_page', next=next_url))
 
     return app
