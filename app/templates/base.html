@@ -121,6 +121,11 @@
                 <i class="material-icons">person</i>
                 <span>{{ _('Profile') }}</span>
             </a>
+            <!-- Mobile language switch -->
+            <a href="#lang-modal" class="btn-flat waves-effect waves-light modal-trigger">
+                <i class="material-icons">language</i>
+                <span>{{ _('Language') }}</span>
+            </a>
             <a href="#logout-modal" class="btn-flat waves-effect waves-light modal-trigger">
                 <i class="material-icons">exit_to_app</i>
                 <span>{{ _('Logout') }}</span>
@@ -137,6 +142,11 @@
             <a href="/" class="btn-flat waves-effect waves-light">
                 <i class="material-icons">home</i>
                 <span>{{ _('Home') }}</span>
+            </a>
+            <!-- Mobile language switch for guests -->
+            <a href="#lang-modal" class="btn-flat waves-effect waves-light modal-trigger">
+                <i class="material-icons">language</i>
+                <span>{{ _('Language') }}</span>
             </a>
         {% endif %}
     </div>
@@ -156,6 +166,17 @@
         </div>
     </div>
     {% endif %}
+
+    <!-- Language Modal (mobile) -->
+    <div id="lang-modal" class="modal bottom-sheet">
+        <div class="modal-content">
+            <h4>{{ _('Language') }}</h4>
+            <div class="collection">
+                <a class="collection-item" href="{{ url_for('set_language', locale='pl') }}">Polski</a>
+                <a class="collection-item" href="{{ url_for('set_language', locale='en') }}">English</a>
+            </div>
+        </div>
+    </div>
     
     <!-- Materialize JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
@@ -167,6 +188,9 @@
             // Initialize dropdown
             var ddElems = document.querySelectorAll('.dropdown-trigger');
             M.Dropdown.init(ddElems, { constrainWidth: false });
+            // Initialize language modal trigger
+            var langModal = document.getElementById('lang-modal');
+            if (langModal) { M.Modal.init(langModal); }
             
             // Highlight active menu item
             var currentPath = window.location.pathname;
