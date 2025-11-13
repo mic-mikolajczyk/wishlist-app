@@ -52,15 +52,15 @@
         <i class="material-icons left">archive</i>{{ _('Event Archived') }}
       </button>
     {% elif event.drawing_enabled %}
-      {% if my_part and my_part.drawn_at and my_part.recipient %}
-  <div class="card-panel green lighten-5" id="draw-result">
-          <h5 style="margin:0;">{{ _('You will give a gift to:') }}</h5>
-          <h4 style="margin:0;" id="recipient-name">{{ my_part.recipient.nickname }}</h4>
-        </div>
+      {% if user_has_drawn and recipient_nickname %}
+      <div class="card-panel green lighten-5" id="draw-result">
+        <h5 style="margin:0;">{{ _('You will give a gift to:') }}</h5>
+        <h4 style="margin:0;" id="recipient-name">{{ recipient_nickname }}</h4>
+      </div>
       {% else %}
-  <button id="draw-button" class="btn-large purple" style="min-width:260px;">
-          <span id="draw-btn-label"><i class="material-icons left">card_giftcard</i>{{ _('Draw Your Recipient') }}</span>
-        </button>
+      <button id="draw-button" class="btn-large purple" style="min-width:260px;">
+        <span id="draw-btn-label"><i class="material-icons left">card_giftcard</i>{{ _('Draw Your Recipient') }}</span>
+      </button>
       {% endif %}
     {% else %}
       <button class="btn-large grey" style="min-width:260px;" disabled title="{{ _('Drawing not enabled yet') }}">
@@ -142,6 +142,7 @@ const TXT_EVENT = "{{ _('Event') }}";
 const TXT_LINK = "{{ _('Link') }}";
 const TXT_DRAW_FAILED = "{{ _('Draw failed') }}";
 const TXT_S_WISHLIST = "{{ _('\'s Wishlist') }}";
+const TXT_DRAW_YOUR_RECIPIENT = "{{ _('Draw Your Recipient') }}";
 
 function loadParticipantWishlist(eventId, userId, nickname) {
   fetch(`/events/${eventId}/participant/${userId}/wishlist`)
@@ -185,7 +186,27 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(r=>r.json())
         .then(data=>{
           if(data.error){
-            M.toast({html: data.error});
+            // If already drawn, show panel using returned recipient nickname
+            if (data.recipient_nickname) {
+              resultData = { recipient_nickname: data.recipient_nickname };
+              setTimeout(function(){
+                const panel = document.createElement('div');
+                panel.className='card-panel green lighten-5';
+                panel.id='draw-result';
+                panel.innerHTML=`<h5 style='margin:0;'>${TXT_GIFT_TO}</h5><h4 style='margin:0;' id='recipient-name'>${resultData.recipient_nickname}</h4>`;
+                drawBtn.parentNode.replaceChild(panel, drawBtn);
+                document.querySelectorAll('#participants-list li').forEach(function(li){
+                  if(li.getAttribute('data-nickname') === resultData.recipient_nickname){
+                    li.classList.add('purple','lighten-5');
+                  }
+                });
+              }, 800);
+            } else {
+              M.toast({html: data.error});
+              // Reset button state
+              drawBtn.classList.remove('disabled');
+              label.innerHTML = `<i class="material-icons left">card_giftcard</i>${TXT_DRAW_YOUR_RECIPIENT}`;
+            }
             return;
           }
           resultData = data;
@@ -204,6 +225,9 @@ document.addEventListener('DOMContentLoaded', function() {
           }, 3000);
         }).catch(err=>{
           M.toast({html: TXT_DRAW_FAILED});
+          // Reset button state on failure
+          drawBtn.classList.remove('disabled');
+          label.innerHTML = `<i class="material-icons left">card_giftcard</i>${TXT_DRAW_YOUR_RECIPIENT}`;
         });
     });
   }

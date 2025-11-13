@@ -95,7 +95,12 @@ def create_event():
 def view_event(event_id: int):
     event = _load_event_or_404(event_id)
     participants = EventParticipant.query.filter_by(event_id=event.id).all()
-    return render_template('event.html', event=event, participants=participants)
+    # Identify current user's participation to persist draw state across reloads
+    my_part = next((p for p in participants if p.user_id == current_user.id), None)
+    user_has_drawn = bool(my_part and my_part.drawn_at)
+    recipient_nickname = my_part.recipient.nickname if (user_has_drawn and my_part and my_part.recipient) else None
+    return render_template('event.html', event=event, participants=participants,
+                           user_has_drawn=user_has_drawn, recipient_nickname=recipient_nickname)
 
 
 # -------------------------- Edit Event ------------------------------------
