@@ -15,11 +15,43 @@ This application provides a wishlist management system for users and now introdu
 - Clicking an accepted participant loads their wishlist (read-only in this context).
 - Embedded "My Wishlist" section under participant list with full-width Add button and in-place edit/delete actions.
 
+### Internationalization (i18n)
+
+Polish language support has been added and is now the default locale.
+
+Key points:
+
+- Uses `Flask-Babel` for translations.
+- Default locale: `pl` (see `Config.BABEL_DEFAULT_LOCALE`).
+- Language switch route: `/lang/<locale>` (currently supports `pl` and `en`).
+- Templates wrap translatable strings with `{{ _('Text') }}`.
+- Polish catalog: `app/translations/pl/LC_MESSAGES/messages.po` (compiled to `.mo`).
+
+To add or update translations:
+
+```bash
+pybabel extract -F babel.cfg -o messages.pot .        # (create babel.cfg first if expanding extraction)
+pybabel update -i messages.pot -d app/translations    # updates existing catalogs
+# OR initialize a new language (example for German):
+pybabel init -i messages.pot -d app/translations -l de
+pybabel compile -d app/translations
+```
+
+Minimal manual workflow (if not using automated extraction): edit the relevant `messages.po` and re-run:
+
+```bash
+pybabel compile -d app/translations
+```
+
+If you add user-specific language preferences later, store the chosen locale (e.g. in the `User` model) and adjust the `get_locale()` function in `app/__init__.py` to read it.
+
 ## Data Model Additions
 
 Two new tables:
+
 - `event`: Stores core event metadata.
 - `event_participant`: Links users to events with fields: `is_admin`, `status` (`pending`, `accepted`).
+
 
 See `app/models/models.py` for implementation.
 

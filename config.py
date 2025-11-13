@@ -7,3 +7,7 @@ class Config:
         'sqlite:///app.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = 'app/static/uploads'
+    # Internationalization settings
+    BABEL_DEFAULT_LOCALE = 'pl'
+    BABEL_DEFAULT_TIMEZONE = 'Europe/Warsaw'
+    LANGUAGES = ['pl', 'en']

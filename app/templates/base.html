@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ get_locale() }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Wishlist App{% endblock %}</title>
+    <title>{% block title %}{{ _('Wishlist App') }}{% endblock %}</title>
     <!-- Materialize CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -61,25 +61,33 @@
 <body>
     <nav>
         <div class="nav-wrapper teal">
-            <a href="/" class="brand-logo" style="margin-left: 1rem;">Givvi</a>
+            <a href="/" class="brand-logo" style="margin-left: 1rem;">{{ _('Givvi') }}</a>
             <ul id="nav-desktop" class="right hide-on-med-and-down" style="margin-right: 15px;">
                 {% if current_user.is_authenticated %}
-                    <li><a href="{{ url_for('events.dashboard') }}">Events</a></li>
-                    <li><a href="{{ url_for('frontend.wishlist_page') }}">My Wishlist</a></li>
-                    <li><a href="{{ url_for('frontend.user_search_page') }}">Find Users</a></li>
-                    <li><a href="{{ url_for('frontend.profile_page') }}">Profile</a></li>
+                    <li><a href="{{ url_for('events.dashboard') }}">{{ _('Events') }}</a></li>
+                    <li><a href="{{ url_for('frontend.wishlist_page') }}">{{ _('My Wishlist') }}</a></li>
+                    <li><a href="{{ url_for('frontend.user_search_page') }}">{{ _('Find Users') }}</a></li>
+                    <li><a href="{{ url_for('frontend.profile_page') }}">{{ _('Profile') }}</a></li>
                     <li>
                         <form method="post" action="{{ url_for('auth.logout') }}" style="display:inline;">
-                            <button type="submit" class="btn-flat" style="margin:0; padding:0 8px; color:white;">Logout</button>
+                            <button type="submit" class="btn-flat" style="margin:0; padding:0 8px; color:white;">{{ _('Logout') }}</button>
                         </form>
                     </li>
                 {% else %}
-                    <li><a href="{{ url_for('frontend.login_page') }}">Login</a></li>
-                    <li><a href="{{ url_for('frontend.register_page') }}">Register</a></li>
+                    <li><a href="{{ url_for('frontend.login_page') }}">{{ _('Login') }}</a></li>
+                    <li><a href="{{ url_for('frontend.register_page') }}">{{ _('Register') }}</a></li>
                 {% endif %}
+                <li>
+                    <a href="#" class="dropdown-trigger" data-target="lang-dropdown">{{ _('Language') }}: {{ get_locale().upper() }}</a>
+                </li>
             </ul>
         </div>
     </nav>
+    <!-- Language Dropdown Structure -->
+    <ul id="lang-dropdown" class="dropdown-content">
+        <li><a href="{{ url_for('set_language', locale='pl') }}">Polski</a></li>
+        <li><a href="{{ url_for('set_language', locale='en') }}">English</a></li>
+    </ul>
     
     <main class="container" style="margin-top: 2rem;">
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -99,36 +107,36 @@
         {% if current_user.is_authenticated %}
             <a href="{{ url_for('events.dashboard') }}" class="btn-flat waves-effect waves-light">
                 <i class="material-icons">event</i>
-                <span>Events</span>
+                <span>{{ _('Events') }}</span>
             </a>
             <a href="{{ url_for('frontend.wishlist_page') }}" class="btn-flat waves-effect waves-light">
                 <i class="material-icons">list</i>
-                <span>Wishlist</span>
+                <span>{{ _('Wishlist') }}</span>
             </a>
             <a href="{{ url_for('frontend.user_search_page') }}" class="btn-flat waves-effect waves-light">
                 <i class="material-icons">search</i>
-                <span>Find</span>
+                <span>{{ _('Find') }}</span>
             </a>
             <a href="{{ url_for('frontend.profile_page') }}" class="btn-flat waves-effect waves-light">
                 <i class="material-icons">person</i>
-                <span>Profile</span>
+                <span>{{ _('Profile') }}</span>
             </a>
             <a href="#logout-modal" class="btn-flat waves-effect waves-light modal-trigger">
                 <i class="material-icons">exit_to_app</i>
-                <span>Logout</span>
+                <span>{{ _('Logout') }}</span>
             </a>
         {% else %}
             <a href="{{ url_for('frontend.login_page') }}" class="btn-flat waves-effect waves-light">
                 <i class="material-icons">login</i>
-                <span>Login</span>
+                <span>{{ _('Login') }}</span>
             </a>
             <a href="{{ url_for('frontend.register_page') }}" class="btn-flat waves-effect waves-light">
                 <i class="material-icons">person_add</i>
-                <span>Register</span>
+                <span>{{ _('Register') }}</span>
             </a>
             <a href="/" class="btn-flat waves-effect waves-light">
                 <i class="material-icons">home</i>
-                <span>Home</span>
+                <span>{{ _('Home') }}</span>
             </a>
         {% endif %}
     </div>
@@ -137,14 +145,14 @@
     {% if current_user.is_authenticated %}
     <div id="logout-modal" class="modal bottom-sheet">
         <div class="modal-content">
-            <h4>Logout</h4>
-            <p>Are you sure you want to logout?</p>
+            <h4>{{ _('Logout') }}</h4>
+            <p>{{ _('Are you sure you want to logout?') }}</p>
         </div>
         <div class="modal-footer">
             <form method="post" action="{{ url_for('auth.logout') }}">
-                <button type="submit" class="btn-flat teal-text waves-effect waves-green">Logout</button>
+                <button type="submit" class="btn-flat teal-text waves-effect waves-green">{{ _('Logout') }}</button>
             </form>
-            <a href="#!" class="modal-close waves-effect waves-red btn-flat">Cancel</a>
+            <a href="#!" class="modal-close waves-effect waves-red btn-flat">{{ _('Cancel') }}</a>
         </div>
     </div>
     {% endif %}
@@ -156,6 +164,9 @@
             // Initialize modal
             var modalElems = document.querySelectorAll('.modal');
             var modalInstances = M.Modal.init(modalElems);
+            // Initialize dropdown
+            var ddElems = document.querySelectorAll('.dropdown-trigger');
+            M.Dropdown.init(ddElems, { constrainWidth: false });
             
             // Highlight active menu item
             var currentPath = window.location.pathname;

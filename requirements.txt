@@ -5,3 +5,4 @@ sqlalchemy
 flask-login
 flask-migrate
 sqlalchemy-libsql
+flask-babel
