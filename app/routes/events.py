@@ -54,6 +54,9 @@ def create_event():
     if not name:
         flash(_('Event name is required'), 'error')
         return redirect(url_for('events.dashboard'))
+    if not budget_amount:
+        flash(_('Budget amount is required'), 'error')
+        return redirect(url_for('events.dashboard'))
     if budget_currency not in ALLOWED_CURRENCIES:
         flash(_('Unsupported currency'), 'error')
         return redirect(url_for('events.dashboard'))
@@ -65,8 +68,12 @@ def create_event():
         except ValueError:
             flash(_('Invalid date format (expected YYYY-MM-DD)'), 'error')
             return redirect(url_for('events.dashboard'))
+    # If date_str empty or None, event_date remains None (Unknown)
     try:
         budget_amount_val = float(budget_amount) if budget_amount else None
+        if budget_amount_val is not None and budget_amount_val < 0:
+            flash(_('Budget amount cannot be negative'), 'error')
+            return redirect(url_for('events.dashboard'))
     except ValueError:
         flash(_('Budget must be a number'), 'error')
         return redirect(url_for('events.dashboard'))
@@ -76,6 +83,8 @@ def create_event():
     event.budget_amount = budget_amount_val
     event.budget_currency = budget_currency
     event.admin_user_id = current_user.id
+    # ensure active flag set for NOT NULL constraint
+    event.is_active = True
     db.session.add(event)
     db.session.flush()
     participant = EventParticipant()
@@ -124,10 +133,16 @@ def edit_event(event_id: int):
         except ValueError:
             flash(_('Invalid date format'), 'error')
             return redirect(url_for('events.view_event', event_id=event.id))
+    elif date_str == '':
+        # Allow clearing date to set to Unknown
+        event.date = None
     event.name = name
     if budget_amount:
         try:
             event.budget_amount = float(budget_amount)
+            if event.budget_amount < 0:
+                flash(_('Budget amount cannot be negative'), 'error')
+                return redirect(url_for('events.view_event', event_id=event.id))
         except ValueError:
             flash(_('Budget must be numeric'), 'error')
             return redirect(url_for('events.view_event', event_id=event.id))

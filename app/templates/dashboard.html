@@ -10,7 +10,7 @@
       <li class="collection-item event-row" data-event-id="{{ event.id }}" style="cursor:pointer;">
         <span class="title"><b>{{ event.name }}</b></span>
         <p style="margin:0;">
-          {% if event.date %}{{ _('Date') }}: {{ event.date }}{% endif %}
+          {{ _('Date') }}: {% if event.date %}{{ event.date }}{% else %}{{ _('Unknown') }}{% endif %}
           {% if event.budget_amount %}<br>{{ _('Budget') }}: {{ event.budget_amount }} {{ event.budget_currency }}{% endif %}
         </p>
       </li>

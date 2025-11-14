@@ -471,9 +471,21 @@ msgstr "Wydarzenie musi być zarchiwizowane przed trwałym usunięciem."
 msgid "Pending Invitations"
 msgstr "Oczekujące Zaproszenia"
 
+msgid "Date is required"
+msgstr "Data jest wymagana"
+
+msgid "Budget amount is required"
+msgstr "Kwota budżetu jest wymagana"
+
 # Password toggle accessibility labels
 msgid "Show password"
 msgstr "Pokaż hasło"
 
 msgid "Hide password"
 msgstr "Ukryj hasło"
+
+msgid "Budget amount cannot be negative"
+msgstr "Kwota budżetu nie może być ujemna"
+
+msgid "Unknown"
+msgstr "Nieznana"

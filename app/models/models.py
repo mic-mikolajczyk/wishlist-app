@@ -77,6 +77,8 @@ class Event(db.Model):
     drawing_enabled = db.Column(db.Boolean, default=False, nullable=False)
     # Archived flag: when true the event is read-only (no edits, invites, drawing actions)
     archived = db.Column(db.Boolean, default=False, nullable=False)
+    # Active flag retained for backward compatibility with older schema expecting NOT NULL is_active
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
 
     admin = db.relationship('User', foreign_keys=[admin_user_id])
     participants = db.relationship('EventParticipant', backref='event', lazy=True, cascade='all, delete-orphan')

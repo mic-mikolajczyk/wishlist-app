@@ -6,7 +6,7 @@
     <div id="event-root" data-event-id="{{ event.id }}" style="display:none;"></div>
   <h4>{{ event.name }} {% if event.archived %}<span class="new badge grey" data-badge-caption="{{ _('Archived') }}"></span>{% endif %}</h4>
     <p>
-  {% if event.date %}<b>{{ _('Date') }}:</b> {{ event.date }} |{% endif %}
+  <b>{{ _('Date') }}:</b> {% if event.date %}{{ event.date }}{% else %}{{ _('Unknown') }}{% endif %}{% if event.budget_amount %} |{% endif %}
   {% if event.budget_amount %}<b>{{ _('Budget') }}:</b> {{ event.budget_amount }} {{ event.budget_currency }}{% endif %}
     </p>
     {% set is_admin = (event.admin_user_id == current_user.id) %}
