@@ -458,6 +458,19 @@ msgstr "Wybierz preferowany język:"
 msgid "Current"
 msgstr "Obecny"
 
+# Permanent deletion related
+msgid "Delete Event Permanently"
+msgstr "Usuń wydarzenie trwale"
+
+msgid "Delete this event permanently? This cannot be undone."
+msgstr "Usunąć to wydarzenie trwale? Tej operacji nie można cofnąć."
+
+msgid "Event must be archived before permanent deletion."
+msgstr "Wydarzenie musi być zarchiwizowane przed trwałym usunięciem."
+
+msgid "Pending Invitations"
+msgstr "Oczekujące Zaproszenia"
+
 # Password toggle accessibility labels
 msgid "Show password"
 msgstr "Pokaż hasło"

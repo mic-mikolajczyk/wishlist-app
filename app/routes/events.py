@@ -145,6 +145,9 @@ def delete_event(event_id: int):
     event = _load_event_or_404(event_id)
     if not _user_is_event_admin(event):
         abort(403)
+    if not getattr(event, 'archived', False):
+        flash(_('Event must be archived before permanent deletion.'), 'error')
+        return redirect(url_for('events.view_event', event_id=event.id))
     # Legacy delete kept for compatibility but UI now archives instead.
     db.session.delete(event)
     db.session.commit()

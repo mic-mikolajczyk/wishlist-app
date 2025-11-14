@@ -16,6 +16,9 @@
           <form method="post" action="{{ url_for('events.unarchive_event', event_id=event.id) }}" data-confirm="{{ _('Unarchive this event?') }}">
             <button type="submit" class="btn green"><i class="material-icons left">unarchive</i>{{ _('Unarchive Event') }}</button>
           </form>
+          <form method="post" action="{{ url_for('events.delete_event', event_id=event.id) }}" data-confirm="{{ _('Delete this event permanently? This cannot be undone.') }}" style="margin-top:0.5rem;">
+            <button type="submit" class="btn red"><i class="material-icons left">delete_forever</i>{{ _('Delete Event Permanently') }}</button>
+          </form>
         {% else %}
           <a class="btn modal-trigger" href="#edit-event-modal"><i class="material-icons left">edit</i>{{ _('Edit Event') }}</a>
           <form method="post" action="{{ url_for('events.enable_drawing', event_id=event.id) }}" data-confirm="{{ _('Enable drawing? This will lock invitations.') }}">
